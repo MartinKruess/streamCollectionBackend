@@ -8,7 +8,7 @@ const mongoose = require('mongoose');
 const { Schema } = require("mongoose")
 const UserDataModel = require('./schemas/user-schemas') 
 const TwitchDataModel = require('./schemas/twitch-data-schemas')
-const loadUserData = require('./comps/userData/loadUserData')
+const loadUserData = require('./comps/login/loadUserData')
 //const register = require('./comps/register/register')
 const LoginController = require('./comps/login/login')
 
