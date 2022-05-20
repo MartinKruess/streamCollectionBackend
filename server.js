@@ -85,7 +85,6 @@ server.listen(PORT, () => {
   console.log(`Webserver: http://localhost:${PORT}`)
 })
 
-
 // 1. DB connection and dataLoad 
 mongoose.connect(mongoPath, {
   useNewURLParser: true,
