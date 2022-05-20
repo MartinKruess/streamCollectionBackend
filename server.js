@@ -5,12 +5,16 @@ const express = require('express')
 const PORT = 3232;
 const axios = require('axios').default
 const mongoose = require('mongoose');
+const cors = require('cors')
+
+const bcrypt = require('bcrypt')
+const saltRounds = 10
+
 const { Schema } = require("mongoose")
-const UserDataModel = require('./schemas/user-schemas') 
+const UserDataModel = require('./schemas/user-schemas')
 const TwitchDataModel = require('./schemas/twitch-data-schemas')
-const loadUserData = require('./comps/login/loadUserData')
-//const register = require('./comps/register/register')
-const LoginController = require('./comps/login/login')
+const LoginController = require('./comps/login/login');
+const { resolve } = require('path');
 
 // DB Authorization
 const mail = process.env.myMail
@@ -25,10 +29,55 @@ let viewerAverage = 0
 
 // neue Instanzen
 const server = express()
+server.use(express.json({ limit: "1mb" }))
+server.use(cors())
 
 // Routes
-server.get("/", (request, response, next) => {
+server.post("/", (request, response, next) => {
   response.send('listening...')
+})
+
+server.post('/register', async (req, res) => {
+  try {
+    let dataOfUser = {}
+    const hashedRegisterPassword = await bcrypt.hash(req.body.password, saltRounds)
+    console.log("HashedPW ", hashedRegisterPassword)
+
+    dataOfUser = {
+      mail: req.body.email,
+      firstname: req.body.firstname,
+      lastname: req.body.lastname,
+      username: req.body.username,
+      password: hashedRegisterPassword,
+      group: "user"
+    },
+      console.log("Data of User, DB get ->", dataOfUser)
+
+    //SAVE: userData to userDB
+    UserDataModel(dataOfUser).save()
+    res.send('Successfull registrated!')
+
+
+  } catch (error) {
+    console.log("ERROR:", error, "Error by registration!")
+  }
+})
+
+// USERNAME: Martin
+// PASSWORD: LoginPW123!
+server.post('/login', async (req, res) => {
+  //Find: userData in userDB
+  const userFromDB = await UserDataModel.findOne({ username: req.body.username })
+  try {
+    // COMPARE: loginData === userData
+    const isLogedIn = await bcrypt.compare(req.body.password, userFromDB.password)
+    console.log("HashedPW ", isLogedIn)
+    resolve(res)
+    res.send(isLogedIn)
+
+  } catch {
+    console.log("ERROR:", "Error by registration!")
+  }
 })
 
 // Webserver
@@ -38,25 +87,23 @@ server.listen(PORT, () => {
 
 
 // 1. DB connection and dataLoad 
-  mongoose.connect(mongoPath, {
-    useNewURLParser: true,
-    useUnifiedTopology: true
-  })
+mongoose.connect(mongoPath, {
+  useNewURLParser: true,
+  useUnifiedTopology: true
+})
   .then(() => {
     console.log("DB connection established!")
     console.log("Connecting to userDB ...")
-    if(UserDataModel.findOne({ userID: "test" }) !== null){
+    if (UserDataModel.findOne({ userID: "test" }) !== null) {
       console.log("userDB connected!")
-    }else{
+    } else {
       console.log("userDB connection failed!")
     }
     //LOGIN: Load userData & streamData
-    loadUserData
   })
   .catch((err) => {
     console.log("DB connection failed!", err.message, "ERROR END")
   })
-
 
 // Twitch
 // Geheimnis: 1be0ubi7blb7c7pwrejevj3lx5v8uz
@@ -71,7 +118,7 @@ const getTwitchData = async () => {
         'Client-ID': 'ldhmjq6ih4k1e7uto56fi9nnzga7ua'
       }
     })
-    
+
     const dataOfTwitch = {
       userID: 123, //Required!!!
       twitchUserID: twitchData.data.data[0].user_id,
@@ -80,26 +127,8 @@ const getTwitchData = async () => {
     // SAVE: Data to twitchData
     // await TwitchDataModel(dataOfTwitch).save() PAUSE
 
-    const dataOfUser = {
-      mail: "testmail@mail.com",
-      username: "testuser",
-      password: "test123",
-      group: "user",
-    }
-
-    //SAVE: userData to userDB
-    // await UserDataModel(dataOfUser).save()
-
-    // LOAD TwitchData by mail
-    const userFromDB = await UserDataModel.findOne({ mail: "testmail@mail.com" })
-    // console.log("userFromDB:", userFromDB._id)
-    // console.log("userID Raw:", userFromDB._id.id)
-    // const userID = userFromDB._id.id.join("")
-    // console.log("userID joined:", userID)
-
-  
-// Login controll
-LoginController
+    // Login controll
+    LoginController
 
     //console.log("Viewer", twitchData);
     //console.log(twitchData.data.data[0].user_id)
@@ -123,11 +152,10 @@ getTwitchData()
 
 
 //REGISTER: create userData
-
+console.log("------------ REGISTER ------------")
+//register
 
 //REGISTER: fetch streamData
 
 
-
 //UPDATE: streamData by Fetch
-

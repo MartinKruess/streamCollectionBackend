@@ -16,7 +16,7 @@ const amountNumber = {
 const twitchDataSchema = mongoose.Schema(
 {
     userID: {
-        type: String,
+        type: mongoose.Types.ObjectId,
         required: true
     },
     twitchUserID: reqNumber,

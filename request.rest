@@ -1,0 +1,16 @@
+### Auth Server - athServer.js at Port 3332
+
+GET http://localhost:3332/auth
+Authorization: Bearer
+Generated Token
+
+###
+
+### Login Server - server.js at Port 3232
+
+POST http://localhost:3232/login
+Content-Type: application/json
+{
+    "username": "Martin",
+    "password": "LoginPW123!"
+}

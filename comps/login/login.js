@@ -1,7 +1,8 @@
 const { userInfo } = require("os")
 const express = require('express')
 const server = express
-const UserDataModel = require('../../schemas/user-schemas') 
+const UserDataModel = require('../../schemas/user-schemas')
+const loadUserData = require('./loadUserData')
 const bcrypt = require('bcrypt')
 const saltRounds = 10
 let examplePassword = "hase"
@@ -27,17 +28,14 @@ const LoginController = async () => {
             })
         // VALID Data
             const loginUserData = await UserDataModel.findOne({ mail: "martinkr90@googlemail.com" })
-            console.log("Zeile 30")
-            console.log("Zeile 31")
                 console.log("userFromDB:", loginUserData)
                 console.log("userID Raw:", loginUserData._id)
-                console.log("userID Raw:", loginUserData._id.id)
-                console.log("userID umgewandelt:", loginUserData._id.id.join(""))
+                
             //Controller
             if(loginUserData.mail === login.mail && loginUserData.password === login.password){
                 console.log("Zeile 34")
                 console.log("userFromDB:", loginUserData._id)
-                console.log("userID Raw:", loginUserData._id.id)
+                loadUserData
             }else {
                 console.log("Zeile 38")
                 console.log(login.mail, login.password)
