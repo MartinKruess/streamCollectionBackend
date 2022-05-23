@@ -156,5 +156,4 @@ console.log("------------ REGISTER ------------")
 
 //REGISTER: fetch streamData
 
-
 //UPDATE: streamData by Fetch
