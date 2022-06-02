@@ -5,6 +5,10 @@ const regString = {
     required: true
 }
 
+const regNumber = {
+    type: Number,
+}
+
 const userSchema = mongoose.Schema({
     mail: regString,
     username: regString,
@@ -12,6 +16,10 @@ const userSchema = mongoose.Schema({
     group: {
         type: String
     },
+    movies: regNumber,
+    music: regNumber,
+    images: regNumber,
+    storage: regNumber,
 }, {collection: 'usersDB'})
 
 const UserDataModel = mongoose.model('usersDB', userSchema)

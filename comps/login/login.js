@@ -2,7 +2,6 @@ const { userInfo } = require("os")
 const express = require('express')
 const server = express
 const UserDataModel = require('../../schemas/user-schemas')
-const loadUserData = require('./loadUserData')
 const bcrypt = require('bcrypt')
 const saltRounds = 10
 let examplePassword = "hase"
@@ -39,7 +38,7 @@ const LoginController = async () => {
             }else {
                 console.log("Zeile 38")
                 console.log(login.mail, login.password)
-                console.log("DB Password is hased?", loginUserData.password)
+                console.log("DB Password is hashed?", loginUserData.password)
             }
             console.log("Zeile 42")
             // Generate Token

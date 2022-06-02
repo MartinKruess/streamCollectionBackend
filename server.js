@@ -2,19 +2,25 @@
 require('dotenv').config();
 const { application } = require('express');
 const express = require('express')
-const PORT = 3232;
+const PORT = process.env.PORT || 3232;
 const axios = require('axios').default
 const mongoose = require('mongoose');
 const cors = require('cors')
 
+// Password hash
 const bcrypt = require('bcrypt')
 const saltRounds = 10
 
-const { Schema } = require("mongoose")
+// Database
+const { Schema } = require('mongoose')
 const UserDataModel = require('./schemas/user-schemas')
 const TwitchDataModel = require('./schemas/twitch-data-schemas')
 const LoginController = require('./comps/login/login');
 const { resolve } = require('path');
+
+// Paypal
+// const paypal = require('./paypal.js')
+// const { createOrder, capturePayment } = require('./paypal')
 
 // DB Authorization
 const mail = process.env.myMail
@@ -22,7 +28,10 @@ const dbOwner = process.env.dbOwner
 const dbPassword = process.env.dbPassword
 const mongoPath = `mongodb+srv://${dbOwner}:${dbPassword}@twitchapp.zg8ms.mongodb.net/twitchappdb?retryWrites=true&w=majority`
 
-// Variables for Data
+// User management Variables
+const userGroups = ["user", "duser", "suser"]
+
+// Variables for TwitchData
 let viewCounters = []
 let viewerSum = 0
 let viewerAverage = 0
@@ -32,11 +41,16 @@ const server = express()
 server.use(express.json({ limit: "1mb" }))
 server.use(cors())
 
+// Authentification
+const {authenticateToken, createAccessToken} = require("./authServer")
+
 // Routes
 server.post("/", (request, response, next) => {
   response.send('listening...')
+  response.send
 })
 
+// REGISTER API
 server.post('/register', async (req, res) => {
   try {
     let dataOfUser = {}
@@ -49,7 +63,11 @@ server.post('/register', async (req, res) => {
       lastname: req.body.lastname,
       username: req.body.username,
       password: hashedRegisterPassword,
-      group: "user"
+      group: userGroups[0],
+      movies: 0,
+      music: 0,
+      images: 0,
+      storage: 400,
     },
       console.log("Data of User, DB get ->", dataOfUser)
 
@@ -57,28 +75,33 @@ server.post('/register', async (req, res) => {
     UserDataModel(dataOfUser).save()
     res.send('Successfull registrated!')
 
-
   } catch (error) {
     console.log("ERROR:", error, "Error by registration!")
   }
 })
 
-// USERNAME: Martin
-// PASSWORD: LoginPW123!
-server.post('/login', async (req, res) => {
+
+// LOGIN API
+server.post('/login',  async (req, res) => {
   //Find: userData in userDB
   const userFromDB = await UserDataModel.findOne({ username: req.body.username })
   try {
     // COMPARE: loginData === userData
     const isLogedIn = await bcrypt.compare(req.body.password, userFromDB.password)
+    //if (isLoginIn === false) return
     console.log("HashedPW ", isLogedIn)
-    resolve(res)
-    res.send(isLogedIn)
+    
+    const generateToken = createAccessToken(userFromDB)
 
+    // Send Data to Frontend
+    res.send({isLogedIn:isLogedIn, generateToken:generateToken})
+  
   } catch {
     console.log("ERROR:", "Error by registration!")
   }
 })
+
+// server.get("/getAllUserInfo", authenticateToken,)
 
 // Webserver
 server.listen(PORT, () => {
@@ -149,11 +172,35 @@ const getTwitchData = async () => {
 getTwitchData()
 //setInterval(getTwitchData, 6000)
 
-
-//REGISTER: create userData
 console.log("------------ REGISTER ------------")
-//register
+
 
 //REGISTER: fetch streamData
 
 //UPDATE: streamData by Fetch
+
+// Group management
+// PAYPAL: Account: martinkr90@googlemail.com
+// PAYPAL-ClientID: AWGUgXWGV3vwwSxZocyqaLtDNtbRurKv2NOc0F19Rn8gFZ6gcw3LA2A2D8iye4iiFfs-8EosfFy0tye9
+// PAYPAL-SECRET: 
+// server.post("/api/orders", async (req, res) => {
+//   const order = await paypal.createOrder();
+//   res.json(order);
+// });
+
+// server.post("/api/orders/:orderId/capture", async (req, res) => {
+//   const { orderId } = req.params;
+//   const captureData = await paypal.capturePayment(orderId);
+//   res.json(captureData);
+// });
+
+const kindOfUser = "monatlich"
+const hardCodedUser = "monatlich"
+
+// Wenn response = monatlich -> setzte userGroup auf subscriber (monatlich) sonst setze auf donator (einmalig)
+/*res.json(captureData)*/ // hardCodedUser === kindOfUser ? userFromDB.group = userGroups[2] : userFromDB.group = userGroups[1]
+
+// DB groupe Change
+// request
+// Auth / isAdmin?
+// response / absage
