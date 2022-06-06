@@ -35,6 +35,7 @@ const userGroups = ["user", "duser", "suser"]
 let viewCounters = []
 let viewerSum = 0
 let viewerAverage = 0
+const lastAverage = []
 
 // neue Instanzen
 const server = express()
@@ -42,7 +43,8 @@ server.use(express.json({ limit: "1mb" }))
 server.use(cors())
 
 // Authentification
-const {authenticateToken, createAccessToken} = require("./authServer")
+const {authenticateToken, createAccessToken} = require("./authServer");
+const { env } = require('process');
 
 // Routes
 server.post("/", (request, response, next) => {
@@ -101,8 +103,6 @@ server.post('/login',  async (req, res) => {
   }
 })
 
-// server.get("/getAllUserInfo", authenticateToken,)
-
 // Webserver
 server.listen(PORT, () => {
   console.log(`Webserver: http://localhost:${PORT}`)
@@ -136,23 +136,28 @@ const getTwitchData = async () => {
   try {
     const twitchData = await axios.get(`https://api.twitch.tv/helix/streams?user_login=Monstercat`, {
       headers: {
-        Authorization: 'Bearer gcxdq6488vdwqsoyjj8b1y2vthcsjh',
-        'Client-ID': 'ldhmjq6ih4k1e7uto56fi9nnzga7ua'
+        Authorization: `Bearer ${env.twitchAuth}`,
+        'Client-ID': env.twitchClientID
       }
     })
 
     const dataOfTwitch = {
       userID: 123, //Required!!!
       twitchUserID: twitchData.data.data[0].user_id,
+      viewerAverage: viewerAverage.toFixed(2),
+      lastAverage: lastAverage
     }
+
+    console.log("Data of Twitch", dataOfTwitch)
+
 
     // SAVE: Data to twitchData
     // await TwitchDataModel(dataOfTwitch).save() PAUSE
 
-    // Login controll
-    LoginController
+    // Login control
+    // LoginController
 
-    //console.log("Viewer", twitchData);
+    
     //console.log(twitchData.data.data[0].user_id)
 
     if (twitchData.data.data[0].type === "live") {
@@ -160,17 +165,22 @@ const getTwitchData = async () => {
       viewCounters.push(twitchData.data.data[0].viewer_count)
       viewCounters.forEach(viewCount => {
         viewerSum += viewCount
-      });
+      })
       viewerAverage = viewerSum / viewCounters.length
+      console.log("viewerSum", viewerSum)
+console.log("viewerAverage", viewerAverage)
       return viewerAverage.toFixed(2)
+    }else{
+      lastAverage.push(viewerAverage)
     }
   } catch (err) {
     console.error(err);
   }
+  
 }
 
-getTwitchData()
-//setInterval(getTwitchData, 6000)
+setInterval(getTwitchData, 3000)
+
 
 console.log("------------ REGISTER ------------")
 

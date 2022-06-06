@@ -8,7 +8,6 @@ let examplePassword = "hase"
 let login = {}
 
 
-
 const LoginController = async () => {
     //server.get('./login', (req, res) => {
         try {
@@ -32,15 +31,12 @@ const LoginController = async () => {
                 
             //Controller
             if(loginUserData.mail === login.mail && loginUserData.password === login.password){
-                console.log("Zeile 34")
                 console.log("userFromDB:", loginUserData._id)
                 loadUserData
             }else {
-                console.log("Zeile 38")
                 console.log(login.mail, login.password)
                 console.log("DB Password is hashed?", loginUserData.password)
             }
-            console.log("Zeile 42")
             // Generate Token
 
         // SEND Data
