@@ -8,7 +8,7 @@ const token = jwt.sign({ foo: 'bar' }, 'shhhhh')
 
 // Auth function
 // "isAuth"
-   const authenticateToken = (req, res, next) => {
+exports.authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization']
     const token = authHeader && authHeader.split(" ")[1]
     if(token === null) return res.sendStatus(401)
@@ -18,11 +18,11 @@ const token = jwt.sign({ foo: 'bar' }, 'shhhhh')
       res.user = user;
       next()
     })
-    
   }
 
   // Create Token with userData(DB)
-   const createAccessToken = (user)=> {
+  exports.createAccessToken = (user)=> {
+    console.log(typeof user, {user})
       const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET)
       return accessToken;
     }

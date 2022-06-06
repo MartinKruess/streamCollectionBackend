@@ -9,12 +9,8 @@ let login = {}
 
 
 const LoginController = async () => {
-    //server.get('./login', (req, res) => {
         try {
-        // GET Data
-            // Get Mail
             const userMail = "martinkr90@googlemail.com" //req.mail
-            // Get Password
 
             // Hash Password
             bcrypt.hash(examplePassword, saltRounds)

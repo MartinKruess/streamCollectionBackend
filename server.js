@@ -93,13 +93,20 @@ server.post('/login',  async (req, res) => {
     //if (isLoginIn === false) return
     console.log("HashedPW ", isLogedIn)
     
-    const generateToken = createAccessToken(userFromDB)
+    const userData = {
+      userID: userFromDB._id,
+      username: userFromDB.username,
+      usergroup: userFromDB.group,
+    }
+    console.log(userData)
+
+    const generateToken = createAccessToken(userData)
 
     // Send Data to Frontend
     res.send({isLogedIn:isLogedIn, generateToken:generateToken})
   
-  } catch {
-    console.log("ERROR:", "Error by registration!")
+  } catch(error) {
+    console.log("ERROR:", "Error by login!", error)
   }
 })
 
@@ -179,7 +186,8 @@ console.log("viewerAverage", viewerAverage)
   
 }
 
-setInterval(getTwitchData, 3000)
+// Abfrage der Twitchdaten alle 30 Sekunden (120 Anfragen / 1h Livestream)
+//setInterval(getTwitchData, 30000)
 
 
 console.log("------------ REGISTER ------------")
@@ -212,5 +220,5 @@ const hardCodedUser = "monatlich"
 
 // DB groupe Change
 // request
-// Auth / isAdmin?
+// Auth / userX get userXData
 // response / absage
