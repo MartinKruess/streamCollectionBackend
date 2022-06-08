@@ -15,7 +15,7 @@ const saltRounds = 10
 const { Schema } = require('mongoose')
 const UserDataModel = require('./schemas/user-schemas')
 const TwitchDataModel = require('./schemas/twitch-data-schemas')
-const LoginController = require('./comps/login/login');
+const ImgDataModel = require('./schemas/img-schemas');
 const { resolve } = require('path');
 
 // Paypal
@@ -45,8 +45,9 @@ server.use(cors())
 // Authentification
 const {authenticateToken, createAccessToken} = require("./authServer");
 const { env } = require('process');
+const { Console } = require('console');
 
-// Routes
+// Routes / API'S
 server.post("/", (request, response, next) => {
   response.send('listening...')
   response.send
@@ -69,7 +70,7 @@ server.post('/register', async (req, res) => {
       movies: 0,
       music: 0,
       images: 0,
-      storage: 400,
+      storage: 400000,
     },
       console.log("Data of User, DB get ->", dataOfUser)
 
@@ -105,8 +106,58 @@ server.post('/login',  async (req, res) => {
     // Send Data to Frontend
     res.send({isLogedIn:isLogedIn, generateToken:generateToken})
   
+    
   } catch(error) {
-    console.log("ERROR:", "Error by login!", error)
+    console.log("ERROR:", "Error by Login!", error)
+  }
+})
+
+// IMG Upload
+server.post('/imageUpload',  async (req, res) => {
+  try {
+    //Find: storageSetting in user at DB
+    const userFromDB = await UserDataModel.findOne({ userID: req.body.userID })
+    const maxStorage = userFromDB.storage
+    
+    //Find: all images of user in DB
+    const userImages = await ImgDataModel.find({ userID: req.body.userID })
+    
+    // Variable <- Request
+    const imgData = await req.body
+
+    // Convert "size" in Bytes to size in KB
+    const rawSize = imgData.size/1024
+    console.log(typeof rawSize, rawSize)
+    const newImgSize = Number(rawSize.toFixed(2))
+    console.log(typeof newImgSize, newImgSize)
+
+    // size of all Img in DB from User
+    const sum = userImages.reduce((acc, object) => {
+      return acc + object.size
+    }, 0)
+    console.log(typeof sum, sum)
+
+    // Check img in DB  + new img is smaller than max storage
+    if(sum + newImgSize < maxStorage){
+      const newNumber = Number(sum/1024) + newImgSize
+      console.log("newImg", newImgSize, "sum", sum, "newNumber", newNumber)
+      console.log(`Upload Yes: ${sum} + ${newImgSize} Belegt: ${newNumber/1024} MB Max ${maxStorage/1024} MB`)
+    
+    // Upload Data of IMG to DB - Fail
+      ImgDataModel(imgData).save() //FEHLER!
+      
+      // Send Data to Frontend
+      res.send({maxStorage: sum})
+
+    }else{
+      const newNumber = Number(sum) + newImgSize
+      console.log(`Upload No: ${sum} + ${newImgSize} Belegt: ${newNumber/1024} MB Max ${maxStorage} MB`)
+      res.send("Upload Failed!")
+    }
+    
+
+  } catch(error) {
+    console.log("ERROR:", "Error by Img upload!", error)
   }
 })
 
@@ -123,7 +174,7 @@ mongoose.connect(mongoPath, {
   .then(() => {
     console.log("DB connection established!")
     console.log("Connecting to userDB ...")
-    if (UserDataModel.findOne({ userID: "test" }) !== null) {
+    if (UserDataModel.findOne({ username: "Raikun" }) !== null) {
       console.log("userDB connected!")
     } else {
       console.log("userDB connection failed!")
@@ -133,6 +184,7 @@ mongoose.connect(mongoPath, {
   .catch((err) => {
     console.log("DB connection failed!", err.message, "ERROR END")
   })
+
 
 // Twitch
 // Geheimnis: 1be0ubi7blb7c7pwrejevj3lx5v8uz
@@ -160,10 +212,6 @@ const getTwitchData = async () => {
 
     // SAVE: Data to twitchData
     // await TwitchDataModel(dataOfTwitch).save() PAUSE
-
-    // Login control
-    // LoginController
-
     
     //console.log(twitchData.data.data[0].user_id)
 
