@@ -146,8 +146,17 @@ server.post('/imageUpload',  async (req, res) => {
     // Upload Data of IMG to DB - Fail
       ImgDataModel(imgData).save() //FEHLER!
       
+      // Load imgData from DB
+      const imagesFromDB = await ImgDataModel.find({ userID: req.body.userID })
+      console.log(imagesFromDB)
+      const imgDataFromDB = imagesFromDB.map((image) => {
+          
+      })
+
+      const imgDataFromDB2 = 
+
       // Send Data to Frontend
-      res.send({maxStorage: sum})
+      res.send({maxStorage: sum, ImagesFromDB: imagesFromDB})
 
     }else{
       const newNumber = Number(sum) + newImgSize
