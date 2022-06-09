@@ -204,8 +204,8 @@ const getTwitchData = async () => {
   try {
     const twitchData = await axios.get(`https://api.twitch.tv/helix/streams?user_login=Monstercat`, {
       headers: {
-        Authorization: `Bearer ${env.twitchAuth}`,
-        'Client-ID': env.twitchClientID
+        Authorization: `Bearer ${env.TWITCH_AUTH}`,
+        'Client-ID': env.TWITCH_CLIENT_ID
       }
     })
 
@@ -217,7 +217,6 @@ const getTwitchData = async () => {
     }
 
     console.log("Data of Twitch", dataOfTwitch)
-
 
     // SAVE: Data to twitchData
     // await TwitchDataModel(dataOfTwitch).save() PAUSE
@@ -240,42 +239,7 @@ console.log("viewerAverage", viewerAverage)
   } catch (err) {
     console.error(err);
   }
-  
 }
 
 // Abfrage der Twitchdaten alle 30 Sekunden (120 Anfragen / 1h Livestream)
 //setInterval(getTwitchData, 30000)
-
-
-console.log("------------ REGISTER ------------")
-
-
-//REGISTER: fetch streamData
-
-//UPDATE: streamData by Fetch
-
-// Group management
-// PAYPAL: Account: martinkr90@googlemail.com
-// PAYPAL-ClientID: AWGUgXWGV3vwwSxZocyqaLtDNtbRurKv2NOc0F19Rn8gFZ6gcw3LA2A2D8iye4iiFfs-8EosfFy0tye9
-// PAYPAL-SECRET: 
-// server.post("/api/orders", async (req, res) => {
-//   const order = await paypal.createOrder();
-//   res.json(order);
-// });
-
-// server.post("/api/orders/:orderId/capture", async (req, res) => {
-//   const { orderId } = req.params;
-//   const captureData = await paypal.capturePayment(orderId);
-//   res.json(captureData);
-// });
-
-const kindOfUser = "monatlich"
-const hardCodedUser = "monatlich"
-
-// Wenn response = monatlich -> setzte userGroup auf subscriber (monatlich) sonst setze auf donator (einmalig)
-/*res.json(captureData)*/ // hardCodedUser === kindOfUser ? userFromDB.group = userGroups[2] : userFromDB.group = userGroups[1]
-
-// DB groupe Change
-// request
-// Auth / userX get userXData
-// response / absage
