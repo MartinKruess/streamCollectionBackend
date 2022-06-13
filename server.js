@@ -1,4 +1,5 @@
-// Imports
+// --- -- Imports -- ---
+// Allgemein
 require('dotenv').config();
 const { application } = require('express');
 const express = require('express')
@@ -31,11 +32,29 @@ const mongoPath = `mongodb+srv://${dbOwner}:${dbPassword}@twitchapp.zg8ms.mongod
 // User management Variables
 const userGroups = ["user", "duser", "suser"]
 
+// Twitch
+const tmi = require('tmi.js')
+
 // Variables for TwitchData
 let viewCounters = []
 let viewerSum = 0
 let viewerAverage = 0
 const lastAverage = []
+
+const options = {
+  options: {
+    debug : true
+  },
+  connection: {
+    cluster: 'aws',
+    reconnect: true,
+  },
+  identity: {
+    username: 'StreamCollTestBot',
+    password: 'oauth:o3iwca821zd1bwvdn5rf88fi63x7f0'
+  },
+  channels: ['RaikunGaming']
+}
 
 // neue Instanzen
 const server = express()
@@ -104,7 +123,7 @@ server.post('/login',  async (req, res) => {
     const generateToken = createAccessToken(userData)
 
     // Send Data to Frontend
-    res.send({isLogedIn:isLogedIn, generateToken:generateToken})
+    res.send({isLogedIn:isLogedIn, generateToken:generateToken, userData})
   
     
   } catch(error) {
@@ -196,6 +215,9 @@ mongoose.connect(mongoPath, {
 
 
 // Twitch
+
+
+
 // Geheimnis: 1be0ubi7blb7c7pwrejevj3lx5v8uz
 // AccsessToken: gcxdq6488vdwqsoyjj8b1y2vthcsjh
 const getTwitchData = async () => {
@@ -240,6 +262,16 @@ console.log("viewerAverage", viewerAverage)
     console.error(err);
   }
 }
+
+
+// Twitch Chat connection but no posts
+// UN: StreamCollTestBot PW: StreamColl_TestBot
+// Chat wird mitgelesen
+const client = new tmi.client(options)
+client.connect()
+client.on('connected', async (address, port) => {
+  await client.action('StreamCollTestBot',  'Ich bin der neue Bot!')
+})
 
 // Abfrage der Twitchdaten alle 30 Sekunden (120 Anfragen / 1h Livestream)
 //setInterval(getTwitchData, 30000)
