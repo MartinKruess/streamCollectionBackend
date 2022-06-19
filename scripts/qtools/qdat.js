@@ -1,11 +1,7 @@
-/**
-* Returns text string containing current date-and-time-stamp, used for labeling files, etc.
-*
-* qdat.getCurrentDateTime()
-*
-* 2022-06-13-06-23-19
-*/
-export const getCurrentDateTime = () => {
+const { Module } = require("module");
+
+/** Return string 2022-06-13-06-23-19, used for labeling files, etc. */
+const getCurrentDateTime = () => {
     var now = new Date();
     var year = now.getFullYear();
     var month = now.getMonth() + 1;
@@ -34,15 +30,10 @@ export const getCurrentDateTime = () => {
 
 /**
 * Adds a suffix to the end of a filename so that it has a timestamp, used for backup or log files, etc.
-*
-* qdat.tempStampifyFileName('index.html')
-*
-* index.html.backup-2022-06-13-06-23-19
-*
-* qdat.tempStampifyFileName('index.html','log')
-*
-* index.html.log-2022-06-13-06-23-19
+    index.html.backup-2022-06-13-06-23-19
 */
-export const timeStampifyFileName = (filename, idCode='backup') => {
+const timeStampifyFileName = (filename, idCode='backup') => {
     return `${filename}.${idCode}-${getCurrentDateTime()}`;
 }
+
+module.exports = {getCurrentDateTime, timeStampifyFileName}
