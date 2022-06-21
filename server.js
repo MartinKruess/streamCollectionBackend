@@ -64,7 +64,6 @@ server.post('/register', async (req, res) => {
   try {
     let dataOfUser = {}
     const hashedRegisterPassword = await bcrypt.hash(req.body.password, saltRounds)
-    console.log("HashedPW ", hashedRegisterPassword)
 
     dataOfUser = {
       mail: req.body.email,
@@ -78,7 +77,7 @@ server.post('/register', async (req, res) => {
       images: 0,
       storage: 400000,
     },
-      console.log("Data of User, DB get ->", dataOfUser)
+      console.log("LogedIn: ->", dataOfUser.userID)
 
     //SAVE: userData to userDB
     UserDataModel(dataOfUser).save()
@@ -91,21 +90,19 @@ server.post('/register', async (req, res) => {
 
 
 // LOGIN API
-server.post('/login',  async (req, res) => {
+server.post('/login', async (req, res) => {
   //Find: userData in userDB
   const userFromDB = await UserDataModel.findOne({ username: req.body.username })
   try {
     // COMPARE: loginData === userData
     const isLogedIn = await bcrypt.compare(req.body.password, userFromDB.password)
     //if (isLoginIn === false) return
-    console.log("HashedPW ", isLogedIn)
     
     const userData = {
       userID: userFromDB._id,
       username: userFromDB.username,
       usergroup: userFromDB.group,
     }
-    console.log(userData)
 
     const generateToken = createAccessToken(userData)
 
@@ -117,6 +114,37 @@ server.post('/login',  async (req, res) => {
     console.log("ERROR:", "Error by Login!", error)
   }
 })
+
+// UMGEBASTELT
+const loadImgFromDB = async () => {
+  // Load imgData from DB
+  const imagesFromDB = await ImgDataModel.find({ userID: req.body.userID })
+  return imagesFromDB
+}
+
+const uploadImgToDB = async (imgData) => {
+  // Convert "size" in Bytes to size in KB
+  const rawSize = imgData.size/1024
+  const newImgSize = Number(rawSize.toFixed(2))
+
+  // size of all Img in DB from User
+  const sum = userImages.reduce((acc, object) => {
+    return acc + object.size
+  }, 0)
+
+  // Check img in DB  + new img is smaller than max storage
+  if(sum + newImgSize < maxStorage){
+    const newNumber = Number(sum/1024) + newImgSize
+
+  // Upload Data of IMG to DB - Fail
+    ImgDataModel(imgData).save()
+  }else{
+    const newNumber = Number(sum) + newImgSize
+    res.send("Upload Failed!")
+  }
+  return sum
+}
+// UMGEBASTELT
 
 // IMG Upload
 server.post('/imageUpload',  async (req, res) => {
@@ -131,46 +159,15 @@ server.post('/imageUpload',  async (req, res) => {
     // Variable <- Request
     const imgData = await req.body
 
-    // Convert "size" in Bytes to size in KB
-    const rawSize = imgData.size/1024
-    console.log(typeof rawSize, rawSize)
-    const newImgSize = Number(rawSize.toFixed(2))
-    console.log(typeof newImgSize, newImgSize)
-
-    // size of all Img in DB from User
-    const sum = userImages.reduce((acc, object) => {
-      return acc + object.size
-    }, 0)
-    console.log(typeof sum, sum)
-
-    // Check img in DB  + new img is smaller than max storage
-    if(sum + newImgSize < maxStorage){
-      const newNumber = Number(sum/1024) + newImgSize
-      console.log("newImg", newImgSize, "sum", sum, "newNumber", newNumber)
-      console.log(`Upload Yes: ${sum} + ${newImgSize} Belegt: ${newNumber/1024} MB Max ${maxStorage/1024} MB`)
-    
-    // Upload Data of IMG to DB - Fail
-      ImgDataModel(imgData).save() //FEHLER!
-      
-      // Load imgData from DB
-      const imagesFromDB = await ImgDataModel.find({ userID: req.body.userID })
-      console.log(imagesFromDB)
-      const imgDataFromDB = imagesFromDB.map((image) => {
-          
-      })
-
-      const imgDataFromDB2 = 
-
-      // Send Data to Frontend
+    if (imgData.size){
+      const sum = await uploadImgToDB(imgData)
+      const imagesFromDB = await loadImgFromDB()
       res.send({maxStorage: sum, ImagesFromDB: imagesFromDB})
 
     }else{
-      const newNumber = Number(sum) + newImgSize
-      console.log(`Upload No: ${sum} + ${newImgSize} Belegt: ${newNumber/1024} MB Max ${maxStorage} MB`)
-      res.send("Upload Failed!")
+      const imagesFromDB = await loadImgFromDB()
+      res.send({maxStorage: sum, ImagesFromDB: imagesFromDB})
     }
-    
-
   } catch(error) {
     console.log("ERROR:", "Error by Img upload!", error)
   }
@@ -210,8 +207,8 @@ const getTwitchData = async () => {
   try {
     const twitchData = await axios.get(`https://api.twitch.tv/helix/streams?user_login=Monstercat`, {
       headers: {
-        Authorization: `Bearer ${env.TWITCH_AUTH}`,
-        'Client-ID': env.TWITCH_CLIENT_ID
+        Authorization: `Bearer ${env.APP_ACCESS_TOKEN}`,
+        'Client-ID': env.TWITCH_CLIENT_ID_NEW
       }
     })
 
@@ -222,12 +219,8 @@ const getTwitchData = async () => {
       lastAverage: lastAverage
     }
 
-    console.log("Data of Twitch", dataOfTwitch)
-
     // SAVE: Data to twitchData
     // await TwitchDataModel(dataOfTwitch).save() PAUSE
-    
-    //console.log(twitchData.data.data[0].user_id)
 
     if (twitchData.data.data[0].type === "live") {
 
@@ -237,7 +230,7 @@ const getTwitchData = async () => {
       })
       viewerAverage = viewerSum / viewCounters.length
       console.log("viewerSum", viewerSum)
-console.log("viewerAverage", viewerAverage)
+      console.log("viewerAverage", viewerAverage)
       return viewerAverage.toFixed(2)
     }else{
       lastAverage.push(viewerAverage)
@@ -248,4 +241,4 @@ console.log("viewerAverage", viewerAverage)
 }
 
 // Abfrage der Twitchdaten alle 30 Sekunden (120 Anfragen / 1h Livestream)
-//setInterval(getTwitchData, 30000)
+// setInterval(getTwitchData, 30000)
