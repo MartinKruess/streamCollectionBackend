@@ -7,6 +7,8 @@ const PORT = process.env.PORT || 3232;
 const axios = require('axios').default
 const mongoose = require('mongoose');
 const cors = require('cors')
+const passport = require('passport')
+const twitchStrategy = require("passport-twitch").Strategy;
 
 // Password hash
 const bcrypt = require('bcrypt')
@@ -15,33 +17,17 @@ const saltRounds = 10
 // Database
 const { Schema } = require('mongoose')
 const UserDataModel = require('./schemas/user-schemas')
-const TwitchDataModel = require('./schemas/twitch-data-schemas')
 const ImgDataModel = require('./schemas/img-schemas');
+const TwitchDataModel = require('./schemas/twitch-data-schemas')
 const { resolve } = require('path');
 
-// Paypal
-// const paypal = require('./paypal.js')
-// const { createOrder, capturePayment } = require('./paypal')
-
 // DB Authorization
-const mail = process.env.myMail
 const dbOwner = process.env.dbOwner
 const dbPassword = process.env.dbPassword
 const mongoPath = `mongodb+srv://${dbOwner}:${dbPassword}@twitchapp.zg8ms.mongodb.net/twitchappdb?retryWrites=true&w=majority`
 
 // User management Variables
 const userGroups = ["user", "duser", "suser"]
-
-// Twitch
-// const tmi = require('tmi.js')
-
-// Variables for TwitchData
-let viewCounters = []
-let viewerSum = 0
-let viewerAverage = 0
-const lastAverage = []
-
-
 
 // neue Instanzen
 const server = express()
@@ -88,7 +74,6 @@ server.post('/register', async (req, res) => {
   }
 })
 
-
 // LOGIN API
 server.post('/login', async (req, res) => {
   //Find: userData in userDB
@@ -117,31 +102,11 @@ server.post('/login', async (req, res) => {
 
 // UMGEBASTELT
 const loadImgFromDB = async () => {
-  // Load imgData from DB
-  const imagesFromDB = await ImgDataModel.find({ userID: req.body.userID })
-  return imagesFromDB
+ 
 }
 
 const uploadImgToDB = async (imgData) => {
-  // Convert "size" in Bytes to size in KB
-  const rawSize = imgData.size/1024
-  const newImgSize = Number(rawSize.toFixed(2))
-
-  // size of all Img in DB from User
-  const sum = userImages.reduce((acc, object) => {
-    return acc + object.size
-  }, 0)
-
-  // Check img in DB  + new img is smaller than max storage
-  if(sum + newImgSize < maxStorage){
-    const newNumber = Number(sum/1024) + newImgSize
-
-  // Upload Data of IMG to DB - Fail
-    ImgDataModel(imgData).save()
-  }else{
-    const newNumber = Number(sum) + newImgSize
-    res.send("Upload Failed!")
-  }
+  
   return sum
 }
 // UMGEBASTELT
@@ -159,15 +124,37 @@ server.post('/imageUpload',  async (req, res) => {
     // Variable <- Request
     const imgData = await req.body
 
-    if (imgData.size){
-      const sum = await uploadImgToDB(imgData)
-      const imagesFromDB = await loadImgFromDB()
-      res.send({maxStorage: sum, ImagesFromDB: imagesFromDB})
+    // Convert "size" in Bytes to size in KB
+    const rawSize = imgData.size/1024
+    const newImgSize = Number(rawSize.toFixed(2))
 
+    // size of all Img in DB from User
+    const sum = userImages.reduce((acc, object) => {
+      return acc + object.size
+    }, 0)
+
+    // Check img in DB  + new img is smaller than max storage
+    if(sum + newImgSize < maxStorage){
+      const newNumber = Number(sum/1024) + newImgSize
+
+    // Upload Data of IMG to DB - Fail
+      ImgDataModel(imgData).save()
     }else{
-      const imagesFromDB = await loadImgFromDB()
-      res.send({maxStorage: sum, ImagesFromDB: imagesFromDB})
+      const newNumber = Number(sum) + newImgSize
+      res.send("Upload Failed!")
     }
+    // Load imgData from DB
+    const imagesFromDB = await ImgDataModel.find({ userID: req.body.userID })
+
+    // if (imgData.size){
+    //   const sum = await uploadImgToDB(imgData)
+    //   const imagesFromDB = await loadImgFromDB()
+    //   res.send({maxStorage: sum, ImagesFromDB: imagesFromDB})
+
+    // }else{
+    //   const imagesFromDB = await loadImgFromDB()
+    //   res.send({maxStorage: sum, ImagesFromDB: imagesFromDB})
+    // }
   } catch(error) {
     console.log("ERROR:", "Error by Img upload!", error)
   }
@@ -177,6 +164,7 @@ server.post('/imageUpload',  async (req, res) => {
 server.listen(PORT, () => {
   console.log(`Webserver: http://localhost:${PORT}`)
 })
+
 
 // 1. DB connection and dataLoad 
 mongoose.connect(mongoPath, {
@@ -198,47 +186,44 @@ mongoose.connect(mongoPath, {
   })
 
 
-// Twitch
-// Geheimnis: 1be0ubi7blb7c7pwrejevj3lx5v8uz
-// AccsessToken: gcxdq6488vdwqsoyjj8b1y2vthcsjh
-const getTwitchData = async () => {
-
-  viewerSum = 0
-  try {
-    const twitchData = await axios.get(`https://api.twitch.tv/helix/streams?user_login=Monstercat`, {
-      headers: {
-        Authorization: `Bearer ${env.APP_ACCESS_TOKEN}`,
-        'Client-ID': env.TWITCH_CLIENT_ID_NEW
-      }
-    })
-
-    const dataOfTwitch = {
-      userID: 123, //Required!!!
-      twitchUserID: twitchData.data.data[0].user_id,
-      viewerAverage: viewerAverage.toFixed(2),
-      lastAverage: lastAverage
-    }
-
-    // SAVE: Data to twitchData
-    // await TwitchDataModel(dataOfTwitch).save() PAUSE
-
-    if (twitchData.data.data[0].type === "live") {
-
-      viewCounters.push(twitchData.data.data[0].viewer_count)
-      viewCounters.forEach(viewCount => {
-        viewerSum += viewCount
-      })
-      viewerAverage = viewerSum / viewCounters.length
-      console.log("viewerSum", viewerSum)
-      console.log("viewerAverage", viewerAverage)
-      return viewerAverage.toFixed(2)
-    }else{
-      lastAverage.push(viewerAverage)
-    }
-  } catch (err) {
-    console.error(err);
-  }
-}
-
 // Abfrage der Twitchdaten alle 30 Sekunden (120 Anfragen / 1h Livestream)
 // setInterval(getTwitchData, 30000)
+
+
+// TWITCH X-Auth TEST
+
+// Validation
+passport.use("twitch", twitchStrategy)
+
+passport.use(new twitchStrategy({
+    clientID: process.env.TWITCH_CLIENT_ID,
+    clientSecret: process.env.TWITCH_CLIENT_SECRET,
+    callbackURL: `http://127.0.0.1:${PORT}/auth/twitch/callback`,
+    scope: "user_read"
+  },
+  function(accessToken, refreshToken, profile, done) {
+    User.findOrCreate({ twitchId: profile.id }, function (err, user) {
+      return done(err, user);
+    });
+  }
+));
+
+passport.serializeUser((user, done) => {
+    done(null, user);
+});
+
+passport.deserializeUser((user, done) => {
+    done(null, user);
+});
+
+server.get("/", (req, res) => {
+    res.render("index");
+});
+
+// Frontend -> Twitch
+server.get("/auth/twitch", passport.authenticate("twitch"))
+
+server.get("/auth/twitch/callback", passport.authenticate("twitch", { failureRedirect: "/" }), function(req, res) {
+    // Successful authentication, redirect home.
+    res.redirect("http://localhost:3000/dashboard");
+});
