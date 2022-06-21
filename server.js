@@ -1,4 +1,5 @@
-// Imports
+// --- -- Imports -- ---
+// Allgemein
 require('dotenv').config();
 const { application } = require('express');
 const express = require('express')
@@ -18,10 +19,6 @@ const TwitchDataModel = require('./schemas/twitch-data-schemas')
 const ImgDataModel = require('./schemas/img-schemas');
 const { resolve } = require('path');
 
-// Paypal
-// const paypal = require('./paypal.js')
-// const { createOrder, capturePayment } = require('./paypal')
-
 // DB Authorization
 const mail = process.env.myMail
 const dbOwner = process.env.dbOwner
@@ -31,21 +28,16 @@ const mongoPath = `mongodb+srv://${dbOwner}:${dbPassword}@twitchapp.zg8ms.mongod
 // User management Variables
 const userGroups = ["user", "duser", "suser"]
 
-// Variables for TwitchData
-let viewCounters = []
-let viewerSum = 0
-let viewerAverage = 0
-const lastAverage = []
-
 // neue Instanzen
 const server = express()
 server.use(express.json({ limit: "1mb" }))
 server.use(cors())
+console.log('Cors is active')
 
 // Authentification
-const {authenticateToken, createAccessToken} = require("./authServer");
+const { authenticateToken, createAccessToken } = require("./authServer");
 const { env } = require('process');
-const { Console } = require('console');
+const { Console, timeStamp } = require('console');
 
 // Routes / API'S
 server.post("/", (request, response, next) => {
@@ -83,9 +75,8 @@ server.post('/register', async (req, res) => {
   }
 })
 
-
 // LOGIN API
-server.post('/login',  async (req, res) => {
+server.post('/login', async (req, res) => {
   //Find: userData in userDB
   const userFromDB = await UserDataModel.findOne({ username: req.body.username })
   try {
@@ -93,7 +84,7 @@ server.post('/login',  async (req, res) => {
     const isLogedIn = await bcrypt.compare(req.body.password, userFromDB.password)
     //if (isLoginIn === false) return
     console.log("HashedPW ", isLogedIn)
-    
+
     const userData = {
       userID: userFromDB._id,
       username: userFromDB.username,
@@ -104,68 +95,61 @@ server.post('/login',  async (req, res) => {
     const generateToken = createAccessToken(userData)
 
     // Send Data to Frontend
-    res.send({isLogedIn:isLogedIn, generateToken:generateToken})
-  
-    
-  } catch(error) {
+    res.send({ isLogedIn: isLogedIn, generateToken: generateToken, userData })
+
+
+  } catch (error) {
     console.log("ERROR:", "Error by Login!", error)
   }
 })
 
+server.get('getAllImages', async (req, res) => { })
+
 // IMG Upload
-server.post('/imageUpload',  async (req, res) => {
+server.post('/imageUpload', async (req, res) => {
   try {
     //Find: storageSetting in user at DB
     const userFromDB = await UserDataModel.findOne({ userID: req.body.userID })
     const maxStorage = userFromDB.storage
-    
+
     //Find: all images of user in DB
     const userImages = await ImgDataModel.find({ userID: req.body.userID })
-    
+
     // Variable <- Request
     const imgData = await req.body
 
     // Convert "size" in Bytes to size in KB
-    const rawSize = imgData.size/1024
-    console.log(typeof rawSize, rawSize)
+    const rawSize = imgData.size / 1024
     const newImgSize = Number(rawSize.toFixed(2))
-    console.log(typeof newImgSize, newImgSize)
 
     // size of all Img in DB from User
     const sum = userImages.reduce((acc, object) => {
       return acc + object.size
     }, 0)
-    console.log(typeof sum, sum)
 
     // Check img in DB  + new img is smaller than max storage
-    if(sum + newImgSize < maxStorage){
-      const newNumber = Number(sum/1024) + newImgSize
+    if (sum + newImgSize < maxStorage) {
+      const newNumber = Number(sum / 1024) + newImgSize
       console.log("newImg", newImgSize, "sum", sum, "newNumber", newNumber)
-      console.log(`Upload Yes: ${sum} + ${newImgSize} Belegt: ${newNumber/1024} MB Max ${maxStorage/1024} MB`)
-    
-    // Upload Data of IMG to DB - Fail
-      ImgDataModel(imgData).save() //FEHLER!
-      
+      console.log(`Upload Yes: ${sum} + ${newImgSize} Belegt: ${newNumber / 1024} MB Max ${maxStorage / 1024} MB`)
+
+      // Upload Data of IMG to DB - Fail
+      ImgDataModel(imgData).save()
+
       // Load imgData from DB
       const imagesFromDB = await ImgDataModel.find({ userID: req.body.userID })
-      console.log(imagesFromDB)
-      const imgDataFromDB = imagesFromDB.map((image) => {
-          
-      })
-
-      const imgDataFromDB2 = 
+      console.log(imagesFromDB[1].name)
 
       // Send Data to Frontend
-      res.send({maxStorage: sum, ImagesFromDB: imagesFromDB})
+      res.send({ maxStorage: sum, ImagesFromDB: imagesFromDB })
 
-    }else{
+    } else {
       const newNumber = Number(sum) + newImgSize
-      console.log(`Upload No: ${sum} + ${newImgSize} Belegt: ${newNumber/1024} MB Max ${maxStorage} MB`)
+      console.log(`Upload No: ${sum} + ${newImgSize} Belegt: ${newNumber / 1024} MB Max ${maxStorage} MB`)
       res.send("Upload Failed!")
     }
-    
-
-  } catch(error) {
+  }
+  catch (error) {
     console.log("ERROR:", "Error by Img upload!", error)
   }
 })
@@ -175,7 +159,7 @@ server.listen(PORT, () => {
   console.log(`Webserver: http://localhost:${PORT}`)
 })
 
-// 1. DB connection and dataLoad 
+// 1. DB connection and dataLoad
 mongoose.connect(mongoPath, {
   useNewURLParser: true,
   useUnifiedTopology: true
@@ -194,88 +178,3 @@ mongoose.connect(mongoPath, {
     console.log("DB connection failed!", err.message, "ERROR END")
   })
 
-
-// Twitch
-// Geheimnis: 1be0ubi7blb7c7pwrejevj3lx5v8uz
-// AccsessToken: gcxdq6488vdwqsoyjj8b1y2vthcsjh
-const getTwitchData = async () => {
-
-  viewerSum = 0
-  try {
-    const twitchData = await axios.get(`https://api.twitch.tv/helix/streams?user_login=Monstercat`, {
-      headers: {
-        Authorization: `Bearer ${env.twitchAuth}`,
-        'Client-ID': env.twitchClientID
-      }
-    })
-
-    const dataOfTwitch = {
-      userID: 123, //Required!!!
-      twitchUserID: twitchData.data.data[0].user_id,
-      viewerAverage: viewerAverage.toFixed(2),
-      lastAverage: lastAverage
-    }
-
-    console.log("Data of Twitch", dataOfTwitch)
-
-
-    // SAVE: Data to twitchData
-    // await TwitchDataModel(dataOfTwitch).save() PAUSE
-    
-    //console.log(twitchData.data.data[0].user_id)
-
-    if (twitchData.data.data[0].type === "live") {
-
-      viewCounters.push(twitchData.data.data[0].viewer_count)
-      viewCounters.forEach(viewCount => {
-        viewerSum += viewCount
-      })
-      viewerAverage = viewerSum / viewCounters.length
-      console.log("viewerSum", viewerSum)
-console.log("viewerAverage", viewerAverage)
-      return viewerAverage.toFixed(2)
-    }else{
-      lastAverage.push(viewerAverage)
-    }
-  } catch (err) {
-    console.error(err);
-  }
-  
-}
-
-// Abfrage der Twitchdaten alle 30 Sekunden (120 Anfragen / 1h Livestream)
-//setInterval(getTwitchData, 30000)
-
-
-console.log("------------ REGISTER ------------")
-
-
-//REGISTER: fetch streamData
-
-//UPDATE: streamData by Fetch
-
-// Group management
-// PAYPAL: Account: martinkr90@googlemail.com
-// PAYPAL-ClientID: AWGUgXWGV3vwwSxZocyqaLtDNtbRurKv2NOc0F19Rn8gFZ6gcw3LA2A2D8iye4iiFfs-8EosfFy0tye9
-// PAYPAL-SECRET: 
-// server.post("/api/orders", async (req, res) => {
-//   const order = await paypal.createOrder();
-//   res.json(order);
-// });
-
-// server.post("/api/orders/:orderId/capture", async (req, res) => {
-//   const { orderId } = req.params;
-//   const captureData = await paypal.capturePayment(orderId);
-//   res.json(captureData);
-// });
-
-const kindOfUser = "monatlich"
-const hardCodedUser = "monatlich"
-
-// Wenn response = monatlich -> setzte userGroup auf subscriber (monatlich) sonst setze auf donator (einmalig)
-/*res.json(captureData)*/ // hardCodedUser === kindOfUser ? userFromDB.group = userGroups[2] : userFromDB.group = userGroups[1]
-
-// DB groupe Change
-// request
-// Auth / userX get userXData
-// response / absage
