@@ -106,6 +106,7 @@ server.post('/login', async (req, res) => {
   }
 })
 
+
 server.get('/getAllImages', async (req, res) => {
   //Find: storageSetting in user at DB
   const header = req.headers
@@ -126,6 +127,9 @@ server.get('/getAllImages', async (req, res) => {
   // Send Data to Frontend
   res.send({ ImagesFromDB: imagesFromDB })
 })
+=======
+server.get('getAllImages', async (req, res) => { })
+
 
 // IMG Upload
 server.post('/imageUpload', async (req, res) => {
