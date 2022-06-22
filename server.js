@@ -43,7 +43,7 @@ const { env } = require('process');
 const { Console, timeStamp } = require('console');
 
 // Routes / API'S
-server.get("/", (request, response, next) => {
+server.post("/", (request, response, next) => {
   response.send('listening...')
   response.send
 })
