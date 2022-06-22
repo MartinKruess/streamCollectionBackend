@@ -35,7 +35,7 @@ server.use(cors())
 console.log('Cors is active')
 
 // Route Imports
-const userRoutes = require("./controllerRoutes/imageRoutes");
+const userRoutes = require("./controllerRoutes/mediaRoutes");
 const imageRoutes = require("./controllerRoutes/userRoutes");
 
 // Authentification

@@ -2,6 +2,8 @@ const ImgDataModel = require("../schemas/img-schemas");
 const UserDataModel = require("../schemas/user-schemas");
 const bcrypt = require('bcrypt')
 
+const { authenticateToken, createAccessToken } = require("../authServer");
+
 exports.register = async (req, res) => {
     try {
         let dataOfUser = {}
@@ -35,6 +37,7 @@ exports.register = async (req, res) => {
 // PASSWORD: LoginPW123!
 
 exports.login = async (req, res) => {
+    console.log("Hi")
     //Find: userData in userDB
     const userFromDB = await UserDataModel.findOne({ username: req.body.username })
     try {
