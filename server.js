@@ -48,11 +48,11 @@ server.use(express.json({ limit: "1mb" }))
 // };
 //const corsOpts =  { credentials: true, origin: url };
 
-const corsOptions = {
-  origin: 'http://localhost:3000' || 'https://stream-collection.netlify.app/',
-  optionsSuccessStatus: 200
-}
-server.use(cors(corsOptions))
+// const corsOptions = {
+//   origin: 'http://localhost:3000' || 'https://stream-collection.netlify.app',
+//   optionsSuccessStatus: 200
+// }
+server.use(cors())
 
 console.log('Cors is active')
 
