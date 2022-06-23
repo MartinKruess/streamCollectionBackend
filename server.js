@@ -56,10 +56,6 @@ server.use(cors(corsOptions))
 
 console.log('Cors is active')
 
-// Route Imports
-const userRoutes = require("./controllerRoutes/userRoutes");
-const mediaRoutes = require("./controllerRoutes/mediaRoutes");
-
 // Authentification
 const { authenticateToken, createAccessToken } = require("./authServer");
 const { env } = require('process');
