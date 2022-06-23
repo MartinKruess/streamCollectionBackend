@@ -3,13 +3,17 @@
 require('dotenv').config();
 const { application } = require('express');
 const express = require('express')
-const baseURL = process.env.BASE_URL
-const mode = process.env.MODE
+const BASE_URL = process.env.BASE_URL
+const MODE = process.env.MODE
 const PORT = process.env.PORT || 3232;
 const axios = require('axios').default
 const mongoose = require('mongoose');
 const cors = require('cors')
-const url = mode === 'deployment' ? `${baseURL}:${PORT}` : baseURL
+const url = MODE === 'deployment' ? `${BASE_URL}:${PORT}` : BASE_URL
+
+// Route Imports
+const userRoutes = require("./controllerRoutes/userRoutes");
+const mediaRoutes = require("./controllerRoutes/mediaRoutes");
 
 // Password hash
 
@@ -34,7 +38,22 @@ const userGroups = ["user", "duser", "suser"]
 // neue Instanzen
 const server = express()
 server.use(express.json({ limit: "1mb" }))
-server.use(cors())
+
+// const corsOpts = {
+//   origin:'*',
+//   credentials: true,
+//   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+//   allowedHeaders: ['Content-Type'],
+//   exposedHeaders: ['Content-Type']
+// };
+//const corsOpts =  { credentials: true, origin: url };
+
+const corsOptions = {
+  origin: 'http://localhost:3000' || 'https://stream-collection.netlify.app/',
+  optionsSuccessStatus: 200
+}
+server.use(cors(corsOptions))
+
 console.log('Cors is active')
 
 // Route Imports
@@ -50,6 +69,10 @@ const { Console, timeStamp } = require('console');
 server.get("/", (request, response, next) => {
   response.send('listening...')
 })
+
+// Endpoints
+server.use('/user', userRoutes)
+server.use('/media', mediaRoutes)
 
 // 1. DB connection and dataLoad
 mongoose.connect(mongoPath, {
@@ -70,11 +93,7 @@ mongoose.connect(mongoPath, {
     console.log("DB connection failed!", err.message, "ERROR END")
   })
 
-// Endpoints
-server.use('/user', userRoutes)
-server.use('/image', mediaRoutes)
-
 // Webserver
 server.listen(PORT, () => {
-  console.log(`Webserver: http://localhost:${PORT}`)
+  console.log(`Webserver: ${BASE_URL}:${PORT}`)
 })
