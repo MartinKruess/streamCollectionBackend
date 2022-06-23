@@ -3,10 +3,13 @@
 require('dotenv').config();
 const { application } = require('express');
 const express = require('express')
+const baseURL = process.env.BASE_URL
+const mode = process.env.MODE
 const PORT = process.env.PORT || 3232;
 const axios = require('axios').default
 const mongoose = require('mongoose');
 const cors = require('cors')
+const url = mode === 'deployment' ? `${baseURL}:${PORT}` : baseURL
 
 // Password hash
 
@@ -47,7 +50,6 @@ const { Console, timeStamp } = require('console');
 server.post("/", (request, response, next) => {
   response.send('listening...')
 })
-
 
 
 // 1. DB connection and dataLoad
