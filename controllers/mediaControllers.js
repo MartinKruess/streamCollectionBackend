@@ -1,7 +1,9 @@
 const ImgDataModel = require("../schemas/img-schemas");
 const UserDataModel = require("../schemas/user-schemas");
 
-exports.getAllImages = async (req, res) => { };
+exports.getAllImages = async (req, res) => {
+    console.log("Try to find images")
+ };
 
 // IMG Upload
 exports.imageUpload = async (req, res) => {

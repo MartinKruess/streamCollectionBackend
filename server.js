@@ -11,8 +11,11 @@ const mongoose = require('mongoose');
 const cors = require('cors')
 const url = mode === 'deployment' ? `${baseURL}:${PORT}` : baseURL
 
-// Password hash
+// Route Imports
+const userRoutes = require("./controllerRoutes/userRoutes");
+const mediaRoutes = require("./controllerRoutes/mediaRoutes");
 
+// Password hash
 const saltRounds = 10
 
 // Database
@@ -34,12 +37,17 @@ const userGroups = ["user", "duser", "suser"]
 // neue Instanzen
 const server = express()
 server.use(express.json({ limit: "1mb" }))
-server.use(cors())
-console.log('Cors is active')
 
-// Route Imports
-const userRoutes = require("./controllerRoutes/userRoutes");
-const mediaRoutes = require("./controllerRoutes/mediaRoutes");
+const corsOpts = {
+  origin:'*',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type'],
+  exposedHeaders: ['Content-Type']
+};
+server.use(cors(corsOpts))
+
+console.log('Cors is active')
 
 // Authentification
 const { authenticateToken, createAccessToken } = require("./authServer");
@@ -47,10 +55,13 @@ const { env } = require('process');
 const { Console, timeStamp } = require('console');
 
 // Routes / API'S
-server.post("/", (request, response, next) => {
+server.get("/", (request, response, next) => {
   response.send('listening...')
 })
 
+// Endpoints
+server.use('/user', userRoutes)
+server.use('/media', mediaRoutes)
 
 // 1. DB connection and dataLoad
 mongoose.connect(mongoPath, {
@@ -70,10 +81,6 @@ mongoose.connect(mongoPath, {
   .catch((err) => {
     console.log("DB connection failed!", err.message, "ERROR END")
   })
-
-// Endpoints
-server.use('/user', userRoutes)
-server.use('/image', mediaRoutes)
 
 // Webserver
 server.listen(PORT, () => {

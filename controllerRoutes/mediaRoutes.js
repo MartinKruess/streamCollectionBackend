@@ -6,7 +6,7 @@ const {
     imageUpload
 } = require("../controllers/mediaControllers");
 
-router.post('/image/getAllImages', getAllImages)
-router.post('/image/imageUpload', imageUpload)
+router.get('/getAllImages', getAllImages)
+router.post('/imageUpload', imageUpload)
 
 module.exports = router;
