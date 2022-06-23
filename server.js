@@ -3,10 +3,13 @@
 require('dotenv').config();
 const { application } = require('express');
 const express = require('express')
+const baseURL = process.env.BASE_URL
+const mode = process.env.MODE
 const PORT = process.env.PORT || 3232;
 const axios = require('axios').default
 const mongoose = require('mongoose');
 const cors = require('cors')
+const url = mode === 'deployment' ? `${baseURL}:${PORT}` : baseURL
 
 // Password hash
 const bcrypt = require('bcrypt')
@@ -40,7 +43,7 @@ const { env } = require('process');
 const { Console, timeStamp } = require('console');
 
 // Routes / API'S
-server.post("/", (request, response, next) => {
+server.get("/", (request, response, next) => {
   response.send('listening...')
   response.send
 })
@@ -90,7 +93,7 @@ server.post('/login', async (req, res) => {
       username: userFromDB.username,
       usergroup: userFromDB.group,
     }
-    console.log(userData)
+    console.log("LoggedIn", userData.userID)
 
     const generateToken = createAccessToken(userData)
 
@@ -103,7 +106,30 @@ server.post('/login', async (req, res) => {
   }
 })
 
+
+server.get('/getAllImages', async (req, res) => {
+  //Find: storageSetting in user at DB
+  const header = req.headers
+  const userIDFromDB = await UserDataModel.findOne({ userID: header.userID })
+  console.log(userIDFromDB)
+
+  //Find: all images of user in DB
+  const userImages = await ImgDataModel.find({ userID: header.userID })
+  console.log(userImages)
+
+  // Variable <- Request
+  const imgData = await req.body
+
+  // Load imgData from DB
+  const imagesFromDB = await ImgDataModel.find({ userID: header.userID })
+  console.log(imagesFromDB)
+
+  // Send Data to Frontend
+  res.send({ ImagesFromDB: imagesFromDB })
+})
+=======
 server.get('getAllImages', async (req, res) => { })
+
 
 // IMG Upload
 server.post('/imageUpload', async (req, res) => {
