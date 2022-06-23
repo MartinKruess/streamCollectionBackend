@@ -47,10 +47,9 @@ const { env } = require('process');
 const { Console, timeStamp } = require('console');
 
 // Routes / API'S
-server.post("/", (request, response, next) => {
+server.get("/", (request, response, next) => {
   response.send('listening...')
 })
-
 
 // 1. DB connection and dataLoad
 mongoose.connect(mongoPath, {
