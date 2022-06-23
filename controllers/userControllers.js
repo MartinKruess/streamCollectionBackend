@@ -38,11 +38,13 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
     console.log("Login process started... ")
+
     //Find: userData in userDB
     const userFromDB = await UserDataModel.findOne({ username: req.body.username })
     try {
         // COMPARE: loginData === userData
         const isLogedIn = await bcrypt.compare(req.body.password, userFromDB.password)
+
         if (isLogedIn === false) return
         console.log("HashedPW ", isLogedIn)
 
