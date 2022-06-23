@@ -43,7 +43,7 @@ exports.login = async (req, res) => {
     try {
         // COMPARE: loginData === userData
         const isLogedIn = await bcrypt.compare(req.body.password, userFromDB.password)
-        //if (isLoginIn === false) return
+        if (isLoginIn === false) return
         console.log("HashedPW ", isLogedIn)
 
         const userData = {
@@ -57,7 +57,6 @@ exports.login = async (req, res) => {
 
         // Send Data to Frontend
         res.send({ isLogedIn: isLogedIn, generateToken: generateToken, userData })
-
 
     } catch (error) {
         console.log("ERROR:", "Error by Login!", error)

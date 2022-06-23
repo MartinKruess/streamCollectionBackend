@@ -35,8 +35,8 @@ server.use(cors())
 console.log('Cors is active')
 
 // Route Imports
-const userRoutes = require("./controllerRoutes/mediaRoutes");
-const imageRoutes = require("./controllerRoutes/userRoutes");
+const userRoutes = require("./controllerRoutes/userRoutes");
+const mediaRoutes = require("./controllerRoutes/mediaRoutes");
 
 // Authentification
 const { authenticateToken, createAccessToken } = require("./authServer");
@@ -48,14 +48,7 @@ server.post("/", (request, response, next) => {
   response.send('listening...')
 })
 
-// Endpoints
-server.use('user/', userRoutes)
-server.use('image/', imageRoutes)
 
-// Webserver
-server.listen(PORT, () => {
-  console.log(`Webserver: http://localhost:${PORT}`)
-})
 
 // 1. DB connection and dataLoad
 mongoose.connect(mongoPath, {
@@ -76,3 +69,11 @@ mongoose.connect(mongoPath, {
     console.log("DB connection failed!", err.message, "ERROR END")
   })
 
+// Endpoints
+server.use('/user', userRoutes)
+server.use('/image', mediaRoutes)
+
+// Webserver
+server.listen(PORT, () => {
+  console.log(`Webserver: http://localhost:${PORT}`)
+})
