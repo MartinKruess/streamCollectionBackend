@@ -3,13 +3,13 @@
 require('dotenv').config();
 const { application } = require('express');
 const express = require('express')
-const baseURL = process.env.BASE_URL
-const mode = process.env.MODE
+const BASE_URL = process.env.BASE_URL
+const MODE = process.env.MODE
 const PORT = process.env.PORT || 3232;
 const axios = require('axios').default
 const mongoose = require('mongoose');
 const cors = require('cors')
-const url = mode === 'deployment' ? `${baseURL}:${PORT}` : baseURL
+const url = MODE === 'deployment' ? `${BASE_URL}:${PORT}` : BASE_URL
 
 // Route Imports
 const userRoutes = require("./controllerRoutes/userRoutes");
@@ -38,14 +38,20 @@ const userGroups = ["user", "duser", "suser"]
 const server = express()
 server.use(express.json({ limit: "1mb" }))
 
-const corsOpts = {
-  origin:'*',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-  allowedHeaders: ['Content-Type'],
-  exposedHeaders: ['Content-Type']
-};
-server.use(cors(corsOpts))
+// const corsOpts = {
+//   origin:'*',
+//   credentials: true,
+//   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+//   allowedHeaders: ['Content-Type'],
+//   exposedHeaders: ['Content-Type']
+// };
+//const corsOpts =  { credentials: true, origin: url };
+
+const corsOptions = {
+  origin: 'http://localhost:3000' || 'https://stream-collection.netlify.app/',
+  optionsSuccessStatus: 200
+}
+server.use(cors(corsOptions))
 
 console.log('Cors is active')
 
@@ -84,5 +90,5 @@ mongoose.connect(mongoPath, {
 
 // Webserver
 server.listen(PORT, () => {
-  console.log(`Webserver: http://localhost:${PORT}`)
+  console.log(`Webserver: ${BASE_URL}:${PORT}`)
 })
