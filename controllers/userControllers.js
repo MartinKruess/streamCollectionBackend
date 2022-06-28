@@ -8,7 +8,6 @@ exports.register = async (req, res) => {
     try {
         let dataOfUser = {}
         const hashedRegisterPassword = await bcrypt.hash(req.body.password, saltRounds)
-        console.log("HashedPW ", hashedRegisterPassword)
 
         dataOfUser = {
             mail: req.body.email,
@@ -22,7 +21,6 @@ exports.register = async (req, res) => {
             images: 0,
             storage: 400000,
         },
-            console.log("Data of User, DB get ->", dataOfUser)
 
         //SAVE: userData to userDB
         UserDataModel(dataOfUser).save()
@@ -46,14 +44,12 @@ exports.login = async (req, res) => {
         const isLogedIn = await bcrypt.compare(req.body.password, userFromDB.password)
 
         if (isLogedIn === false) return
-        console.log("HashedPW ", isLogedIn)
 
         const userData = {
             userID: userFromDB._id,
             username: userFromDB.username,
             usergroup: userFromDB.group,
         }
-        console.log(userData)
 
         const generateToken = createAccessToken(userData)
 

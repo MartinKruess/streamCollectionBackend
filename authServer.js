@@ -9,20 +9,18 @@ const token = jwt.sign({ foo: 'bar' }, 'shhhhh')
 // Auth function
 // "isAuth"
 exports.authenticateToken = (req, res, next) => {
-    const authHeader = req.headers['authorization']
-    const token = authHeader && authHeader.split(" ")[1]
+    const token = req.headers['authtoken']
     if(token === null) return res.sendStatus(401)
 
-    jwt.verify(token, precess.env.ACCESS_TOKEN_SECRET, (err, user) => {
-      if (err) return res.sendStatus(403)
-      res.user = user;
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+      if (err) return res.status(403).send(err)
+      req.user = user;
       next()
     })
   }
 
   // Create Token with userData(DB)
   exports.createAccessToken = (user)=> {
-    console.log(typeof user, {user})
       const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET)
       return accessToken;
     }

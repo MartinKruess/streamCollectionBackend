@@ -17,6 +17,7 @@
     "@types/node": "^17.0.31"
   },
   "dependencies": {
+    "@d-fischer/passport-twitch": "^1.0.5",
     "axios": "^0.27.2",
     "bcrypt": "^5.0.1",
     "cors": "^2.8.5",

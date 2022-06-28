@@ -60,15 +60,18 @@ console.log('Cors is active')
 const { authenticateToken, createAccessToken } = require("./authServer");
 const { env } = require('process');
 const { Console, timeStamp } = require('console');
+const twitchRouter = require('./twitch/twitchAuth');
 
-// Routes / API'S
+// Endpoints / Routes / API'S
 server.get("/", (request, response, next) => {
   response.send('listening...')
 })
 
-// Endpoints
+ 
 server.use('/user', userRoutes)
-server.use('/media', mediaRoutes)
+server.use('/media', authenticateToken, mediaRoutes)
+server.use('/auth/twitch', twitchRouter)
+
 
 // 1. DB connection and dataLoad
 mongoose.connect(mongoPath, {

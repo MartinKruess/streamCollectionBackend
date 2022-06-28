@@ -2,12 +2,25 @@ const ImgDataModel = require("../schemas/img-schemas");
 const UserDataModel = require("../schemas/user-schemas");
 
 exports.getAllImages = async (req, res) => {
-    console.log("Try to find images")
+
+    //const userToken = await JSON.stringify(req.oauthtoken)
+    const userID = req.user.userID
+    
+    try {
+    // Load imgData from DB
+    const imagesFromDB = await ImgDataModel.find({ userID: userID })
+
+    // Send Data to Frontend
+    res.send({ ImagesFromDB: imagesFromDB })
+    } catch (error) {
+        
+    }
  };
 
 // IMG Upload
 exports.imageUpload = async (req, res) => {
     try {
+
         //Find: storageSetting in user at DB
         const userFromDB = await UserDataModel.findOne({ userID: req.body.userID })
         const maxStorage = userFromDB.storage
@@ -30,22 +43,19 @@ exports.imageUpload = async (req, res) => {
         // Check img in DB  + new img is smaller than max storage
         if (sum + newImgSize < maxStorage) {
             const newNumber = Number(sum / 1024) + newImgSize
-            console.log("newImg", newImgSize, "sum", sum, "newNumber", newNumber)
-            console.log(`Upload Yes: ${sum} + ${newImgSize} Belegt: ${newNumber / 1024} MB Max ${maxStorage / 1024} MB`)
 
             // Upload Data of IMG to DB - Fail
             ImgDataModel(imgData).save()
 
             // Load imgData from DB
             const imagesFromDB = await ImgDataModel.find({ userID: req.body.userID })
-            console.log(imagesFromDB[1].name)
 
             // Send Data to Frontend
             res.send({ maxStorage: sum, ImagesFromDB: imagesFromDB })
 
         } else {
             const newNumber = Number(sum) + newImgSize
-            console.log(`Upload No: ${sum} + ${newImgSize} Belegt: ${newNumber / 1024} MB Max ${maxStorage} MB`)
+            console.log(`Belegt: ${newNumber / 1024} MB Max ${maxStorage} MB`)
             res.send("Upload Failed!")
         }
     }

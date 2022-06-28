@@ -1,6 +1,13 @@
 require('dotenv').config();
 const passport = require('passport')
-const twitchStrategy = require("passport-twitch").Strategy;
+//const twitchStrategy = require("passport-twitch").Strategy;
+var twitchStrategy = require("@d-fischer/passport-twitch").Strategy;
+const { Router } = require('express');
+const { profile } = require('console');
+const UserDataModel = require('../schemas/user-schemas');
+
+const twitchRouter = Router()
+
 
 // Validation
 passport.use("twitch", twitchStrategy)
@@ -8,13 +15,22 @@ passport.use("twitch", twitchStrategy)
 passport.use(new twitchStrategy({
     clientID: process.env.TWITCH_CLIENT_ID,
     clientSecret: process.env.TWITCH_CLIENT_SECRET,
-    callbackURL: "http://127.0.0.1:3000/auth/twitch/callback",
+    callbackURL: "http://localhost:3232/auth/twitch/callback",
+    session: false,
     scope: "user_read"
   },
-  function(accessToken, refreshToken, profile, done) {
-    User.findOrCreate({ twitchId: profile.id }, function (err, user) {
-      return done(err, user);
-    });
+  async function(accessToken, refreshToken, profile, done) {
+    console.log("test")
+    console.log("Profile from Console", profile)
+    console.log(accessToken)
+      
+    const user = await UserDataModel.findOne({ mail: profile.email })
+    console.log("USER", user)
+    user.twitchId = profile.id
+    user.twitchToken = accessToken
+    user.save(function (err, userUpdated) {       
+        return done(err, userUpdated);
+    })
   }
 ));
 
@@ -26,14 +42,13 @@ passport.deserializeUser(function(user, done) {
     done(null, user);
 });
 
-app.get("/", function (req, res) {
-    res.render("index");
-});
-
 // Frontend -> Twitch
-app.get("/auth/twitch", passport.authenticate("twitch"))
+twitchRouter.get("/", passport.authenticate("twitch", { forceVerify: true }))
 
-app.get("/auth/twitch/callback", passport.authenticate("twitch", { failureRedirect: "/" }), function(req, res) {
+twitchRouter.get("/callback", passport.authenticate("twitch", { failureRedirect: "/" }), function(req, res) {
     // Successful authentication, redirect home.
+    console.log("authenticated!")
     res.redirect("http://localhost:3000/dashboard");
 });
+
+module.exports = twitchRouter
