@@ -1,10 +1,25 @@
-require('dotenv').config();
+const express = require('express')
+
+const server = express()
 const passport = require('passport')
+require('dotenv').config();
+
 //const twitchStrategy = require("passport-twitch").Strategy;
-var twitchStrategy = require("@d-fischer/passport-twitch").Strategy;
+const twitchStrategy = require("@d-fischer/passport-twitch").Strategy;
 const { Router } = require('express');
 const { profile } = require('console');
 const UserDataModel = require('../schemas/user-schemas');
+
+
+//const { session } = require('passport')
+// const session = require("express-session")
+// server.use( session())
+// server.use ( passport.initialize())
+// server.use(passport.session({
+//   secret: "hahohe",
+//   saveUninitialized: false,
+//   resave: false
+// }))
 
 const twitchRouter = Router()
 
@@ -16,7 +31,6 @@ passport.use(new twitchStrategy({
     clientID: process.env.TWITCH_CLIENT_ID,
     clientSecret: process.env.TWITCH_CLIENT_SECRET,
     callbackURL: "http://localhost:3232/auth/twitch/callback",
-    session: false,
     scope: "user_read"
   },
   async function(accessToken, refreshToken, profile, done) {
@@ -43,7 +57,10 @@ passport.deserializeUser(function(user, done) {
 });
 
 // Frontend -> Twitch
-twitchRouter.get("/", passport.authenticate("twitch", { forceVerify: true }))
+twitchRouter.get("/", passport.authenticate("twitch", { 
+  session: false,
+  forceVerify: true
+}))
 
 twitchRouter.get("/callback", passport.authenticate("twitch", { failureRedirect: "/" }), function(req, res) {
     // Successful authentication, redirect home.

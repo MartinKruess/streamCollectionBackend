@@ -26,7 +26,6 @@
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.3.2",
     "passport": "^0.6.0",
-    "passport-twitch": "^1.0.3",
     "tmi.js": "^1.8.5",
     "twitch": "^4.6.7"
   }

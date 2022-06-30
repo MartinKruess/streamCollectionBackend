@@ -39,6 +39,7 @@ const userGroups = ["user", "duser", "suser"]
 const server = express()
 server.use(express.json({ limit: "1mb" }))
 
+
 // const corsOpts = {
 //   origin:'*',
 //   credentials: true,
