@@ -1,31 +1,17 @@
 const express = require('express')
 
-const server = express()
 const passport = require('passport')
 require('dotenv').config();
 
 //const twitchStrategy = require("passport-twitch").Strategy;
-const twitchStrategy = require("@d-fischer/passport-twitch").Strategy;
+//const twitchStrategy = require("@d-fischer/passport-twitch").Strategy;
+const twitchStrategy = require("passport-twitch-new").Strategy;
 const { Router } = require('express');
 const { profile } = require('console');
 const UserDataModel = require('../schemas/user-schemas');
-
-
-//const { session } = require('passport')
-// const session = require("express-session")
-// server.use( session())
-// server.use ( passport.initialize())
-// server.use(passport.session({
-//   secret: "hahohe",
-//   saveUninitialized: false,
-//   resave: false
-// }))
-
 const twitchRouter = Router()
 
-
 // Validation
-passport.use("twitch", twitchStrategy)
 
 passport.use(new twitchStrategy({
     clientID: process.env.TWITCH_CLIENT_ID,
@@ -39,12 +25,10 @@ passport.use(new twitchStrategy({
     console.log(accessToken)
       
     const user = await UserDataModel.findOne({ mail: profile.email })
-    console.log("USER", user)
     user.twitchId = profile.id
     user.twitchToken = accessToken
-    user.save(function (err, userUpdated) {       
-        return done(err, userUpdated);
-    })
+    const userUpdated = await user.save()
+    done(null, userUpdated)
   }
 ));
 

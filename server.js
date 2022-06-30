@@ -3,6 +3,7 @@
 require('dotenv').config();
 const { application } = require('express');
 const express = require('express')
+const passport = require('passport')
 const BASE_URL = process.env.BASE_URL
 const MODE = process.env.MODE
 const PORT = process.env.PORT || 3232;
@@ -38,24 +39,19 @@ const userGroups = ["user", "duser", "suser"]
 // neue Instanzen
 const server = express()
 server.use(express.json({ limit: "1mb" }))
-
-
-// const corsOpts = {
-//   origin:'*',
-//   credentials: true,
-//   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-//   allowedHeaders: ['Content-Type'],
-//   exposedHeaders: ['Content-Type']
-// };
-//const corsOpts =  { credentials: true, origin: url };
-
-// const corsOptions = {
-//   origin: 'http://localhost:3000' || 'https://stream-collection.netlify.app',
-//   optionsSuccessStatus: 200
-// }
 server.use(cors())
-
 console.log('Cors is active')
+
+
+// Sessions
+const session = require("express-session")
+server.use(session({
+  secret: "hahohe",
+  saveUninitialized: false,
+  resave: false
+}))
+server.use ( passport.initialize())
+
 
 // Authentification
 const { authenticateToken, createAccessToken } = require("./authServer");
@@ -68,7 +64,6 @@ server.get("/", (request, response, next) => {
   response.send('listening...')
 })
 
- 
 server.use('/user', userRoutes)
 server.use('/media', authenticateToken, mediaRoutes)
 server.use('/auth/twitch', twitchRouter)
