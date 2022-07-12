@@ -8,12 +8,12 @@ const imgString = {
 const imgSchema = mongoose.Schema({
     userID: imgString,
     view: imgString,
-    name: imgString,
+    name: String,
     size: {
         type: Number,
         required: true
     },
-    type: imgString,
+    type: String,
 }, {collection: 'imgDB'})
 
 const ImgDataModel = mongoose.model('imgDB', imgSchema)

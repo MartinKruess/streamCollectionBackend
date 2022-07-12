@@ -9,7 +9,9 @@ const twitchStrategy = require("passport-twitch-new").Strategy;
 const { Router } = require('express');
 const { profile } = require('console');
 const UserDataModel = require('../schemas/user-schemas');
+const { default: axios } = require('axios');
 const twitchRouter = Router()
+const { env } = require('process');
 
 // Validation
 
@@ -17,17 +19,20 @@ passport.use(new twitchStrategy({
     clientID: process.env.TWITCH_CLIENT_ID,
     clientSecret: process.env.TWITCH_CLIENT_SECRET,
     callbackURL: "http://localhost:3232/auth/twitch/callback",
-    scope: "user_read"
+    scope: [
+      "user_read", "bits:read", "channel:read:hype_train", "moderation:read",
+      "moderator:manage:automod", "moderator:read:automod_settings",
+      "moderator:manage:automod_settings", "moderator:manage:banned_users",
+      "moderator:read:blocked_terms", "moderator:manage:blocked_terms",
+      "channel:read:polls", "channel:read:subscriptions", "channel:read:goals",
+    ]
+    //
   },
   async function(accessToken, refreshToken, profile, done) {
-    console.log("test")
-    console.log("Profile from Console", profile)
-    console.log(accessToken)
       
-    const user = await UserDataModel.findOne({ mail: profile.email })
-    user.twitchId = profile.id
-    user.twitchToken = accessToken
-    const userUpdated = await user.save()
+    await UserDataModel.updateOne({ mail: profile.email },{"twitchId": profile.id, "twitchToken": accessToken, "twitchRefreshToken": refreshToken})
+    const userUpdated = await UserDataModel.findOne({ mail: profile.email })
+    console.log(userUpdated)
     done(null, userUpdated)
   }
 ));
@@ -51,5 +56,20 @@ twitchRouter.get("/callback", passport.authenticate("twitch", { failureRedirect:
     console.log("authenticated!")
     res.redirect("http://localhost:3000/dashboard");
 });
+
+// exports.refToken = async (refreshToken) => {
+//   const oAuthUser = await UserDataModel.findOne({ mail: profile.email })
+
+//   const twitchData = await axios.post(`https://id.twitch.tv/oauth2/token?broadcaster-id=${oAuthUser.twitchId}`,
+//     params: {
+//       'Content-Type': 'application/json',
+//       client_id: process.env.TWITCH_CLIENT_ID,
+//       client_secret: process.env.TWITCH_CLIENT_SECRET,
+//       grant_type: "refresh_token",
+//       refresh_token: refreshToken, 
+//     })
+//   }
+
+
 
 module.exports = twitchRouter

@@ -16,6 +16,15 @@ const userSchema = mongoose.Schema({
     group: {
         type: String
     },
+    twitchId: {
+        type: String
+    },
+    twitchToken: {
+        type: String
+    },
+    twitchRefreshToken: {
+        type: String
+    },
     movies: regNumber,
     music: regNumber,
     images: regNumber,

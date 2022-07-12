@@ -1,5 +1,6 @@
 require('dotenv').config();
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+const UserDataModel = require('./schemas/user-schemas');
 const token = jwt.sign({ foo: 'bar' }, 'shhhhh')
 
 //Testlogin Data
@@ -12,9 +13,16 @@ exports.authenticateToken = (req, res, next) => {
     const token = req.headers['authtoken']
     if(token === null) return res.sendStatus(401)
 
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, decodedUser) => {
       if (err) return res.status(403).send(err)
-      req.user = user;
+      const userFromDB = await UserDataModel.findById( decodedUser.userID )
+      const userPublic = userFromDB.toObject()
+      delete userPublic.password
+      userPublic.userID = userPublic._id
+      req.user = userPublic
+      console.log("reqUser",req.user)
+      //req.user = user;
+
       next()
     })
   }

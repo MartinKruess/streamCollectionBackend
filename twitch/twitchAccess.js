@@ -5,10 +5,10 @@
 const getTwitchUSerData = async () => {
 
     try {
-      const twitchData = await axios.post(`https://api.twitch.tv/helix/eventsub/subscriptions`, {
+      const twitchData = await axios.Post(`https://api.twitch.tv/helix/eventsub/subscriptions`, {
         headers: {
           Authorization: `Bearer ${env.APP_ACCESS_TOKEN}`,
-          'Client-ID': env.TWITCH_CLIENT_ID_NEW
+          'Client-ID': env.TWITCH_CLIENT_ID
         }
       })
   

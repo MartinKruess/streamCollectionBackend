@@ -4,7 +4,7 @@ const UserDataModel = require("../schemas/user-schemas");
 exports.getAllImages = async (req, res) => {
 
     //const userToken = await JSON.stringify(req.oauthtoken)
-    const userID = req.user.userID
+    const userID = req.user._id
     
     try {
     // Load imgData from DB
@@ -13,23 +13,22 @@ exports.getAllImages = async (req, res) => {
     // Send Data to Frontend
     res.send({ ImagesFromDB: imagesFromDB })
     } catch (error) {
-        
     }
  };
 
 // IMG Upload
-exports.imageUpload = async (req, res) => {
+exports.imageUpload = async (req, res, next) => {
+    const userID = req.user._id
     try {
 
-        //Find: storageSetting in user at DB
-        const userFromDB = await UserDataModel.findOne({ userID: req.body.userID })
-        const maxStorage = userFromDB.storage
+        const maxStorage = req.user.storage
 
         //Find: all images of user in DB
-        const userImages = await ImgDataModel.find({ userID: req.body.userID })
+        const userImages = await ImgDataModel.find({ userID })
 
         // Variable <- Request
-        const imgData = await req.body
+        const imgData = req.body
+        console.log(imgData)
 
         // Convert "size" in Bytes to size in KB
         const rawSize = imgData.size / 1024
@@ -48,15 +47,15 @@ exports.imageUpload = async (req, res) => {
             ImgDataModel(imgData).save()
 
             // Load imgData from DB
-            const imagesFromDB = await ImgDataModel.find({ userID: req.body.userID })
+            const imagesFromDB = await ImgDataModel.find({ userID })
 
             // Send Data to Frontend
             res.send({ maxStorage: sum, ImagesFromDB: imagesFromDB })
 
         } else {
             const newNumber = Number(sum) + newImgSize
-            console.log(`Belegt: ${newNumber / 1024} MB Max ${maxStorage} MB`)
-            res.send("Upload Failed!")
+            console.log(sum, newImgSize, maxStorage)
+            next(`Belegt: ${newNumber / 1024} MB Max ${maxStorage} MB`)
         }
     }
     catch (error) {

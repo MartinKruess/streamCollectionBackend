@@ -15,7 +15,7 @@ const getTwitchData = async () => {
     const twitchData = await axios.get(`https://api.twitch.tv/helix/streams?user_login=Monstercat`, {
       headers: {
         Authorization: `Bearer ${env.APP_ACCESS_TOKEN}`,
-        'Client-ID': env.TWITCH_CLIENT_ID_NEW
+        'Client-ID': env.TWITCH_CLIENT_ID
       }
     })
 
