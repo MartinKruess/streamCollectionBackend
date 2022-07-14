@@ -54,7 +54,7 @@ twitchRouter.get("/", passport.authenticate("twitch", {
 twitchRouter.get("/callback", passport.authenticate("twitch", { failureRedirect: "/" }), function(req, res) {
     // Successful authentication, redirect home.
     console.log("authenticated!")
-    res.redirect(`${FRONTEND_URL}/dashboard`);
+    res.redirect(`${process.env.FRONTEND_URL}/dashboard`);
 });
 
 exports.refToken = async (refreshToken) => {
