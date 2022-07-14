@@ -62,3 +62,31 @@ exports.imageUpload = async (req, res, next) => {
         console.log("ERROR:", "Error by Img upload!", error)
     }
 }
+
+exports.mediaDelete = async (req, res) => {
+    console.log(req.body)
+    const userID = req.user._id
+    const mediaID = req.body._id
+    const mediaType = req.body.type
+
+    switch (mediaType) {
+        case "img":
+            await ImgDataModel.deleteOne({_id: mediaID})
+            const images = await ImgDataModel.find( userID )
+            res.send(images)
+            break;
+        case "sound":
+            
+            break;
+        case "video":
+            
+            break;
+    
+        default:
+            break;
+    }
+
+    
+
+    
+}
