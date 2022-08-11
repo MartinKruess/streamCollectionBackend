@@ -1,4 +1,5 @@
-require('dotenv').config();
+//require('dotenv').config();
+const config = require('./config')
 const jwt = require('jsonwebtoken');
 const UserDataModel = require('./schemas/user-schemas');
 const token = jwt.sign({ foo: 'bar' }, 'shhhhh')
@@ -8,12 +9,11 @@ const token = jwt.sign({ foo: 'bar' }, 'shhhhh')
 // PASSWORD: LoginPW123!
 
 // Auth function
-// "isAuth"
 exports.authenticateToken = (req, res, next) => {
     const token = req.headers['authtoken']
     if(token === null) return res.sendStatus(401)
 
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, decodedUser) => {
+    jwt.verify(token, config.ACCESS_TOKEN_SECRET, async (err, decodedUser) => {
       if (err) return res.status(403).send(err)
       const userFromDB = await UserDataModel.findById( decodedUser.userID )
       const userPublic = userFromDB.toObject()
@@ -29,7 +29,7 @@ exports.authenticateToken = (req, res, next) => {
 
   // Create Token with userData(DB)
   exports.createAccessToken = (user)=> {
-      const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET)
+      const accessToken = jwt.sign(user, config.ACCESS_TOKEN_SECRET)
       return accessToken;
     }
 

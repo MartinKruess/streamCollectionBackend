@@ -2,6 +2,8 @@
 // Geheimnis: 1be0ubi7blb7c7pwrejevj3lx5v8uz
 // AccsessToken: gcxdq6488vdwqsoyjj8b1y2vthcsjh
 
+const config = require('../config')
+
 // Variables for TwitchData
 let viewCounters = []
 let viewerSum = 0
@@ -14,8 +16,8 @@ const getTwitchData = async () => {
   try {
     const twitchData = await axios.get(`https://api.twitch.tv/helix/streams?user_login=Monstercat`, {
       headers: {
-        Authorization: `Bearer ${env.APP_ACCESS_TOKEN}`,
-        'Client-ID': env.TWITCH_CLIENT_ID
+        Authorization: `Bearer ${config.APP_ACCESS_TOKEN}`,
+        'Client-ID': config.TWITCH_CLIENT_ID
       }
     })
 

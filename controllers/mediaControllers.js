@@ -84,9 +84,5 @@ exports.mediaDelete = async (req, res) => {
     
         default:
             break;
-    }
-
-    
-
-    
+    }    
 }

@@ -29,6 +29,7 @@
     "mongoose": "^6.3.2",
     "passport": "^0.6.0",
     "passport-twitch-new": "^0.0.2",
+    "socket.io": "^4.5.1",
     "tmi.js": "^1.8.5",
     "twitch": "^4.6.7"
   }
