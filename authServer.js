@@ -1,4 +1,4 @@
-//require('dotenv').config();
+
 const config = require('./config')
 const jwt = require('jsonwebtoken');
 const UserDataModel = require('./schemas/user-schemas');
@@ -20,7 +20,6 @@ exports.authenticateToken = (req, res, next) => {
       delete userPublic.password
       userPublic.userID = userPublic._id
       req.user = userPublic
-      console.log("reqUser",req.user)
       //req.user = user;
 
       next()

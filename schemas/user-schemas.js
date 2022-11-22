@@ -25,10 +25,6 @@ const userSchema = mongoose.Schema({
     twitchRefreshToken: {
         type: String
     },
-    movies: regNumber,
-    music: regNumber,
-    images: regNumber,
-    storage: regNumber,
 }, {collection: 'usersDB'})
 
 const UserDataModel = mongoose.model('usersDB', userSchema)

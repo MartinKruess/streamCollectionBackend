@@ -4,8 +4,8 @@ const envConfig = {
     BASE_URL: process.env.BASE_URL,
     MODE: process.env.MODE,
     PORT: process.env.PORT || 3232,
-    DB_OWNER: process.env.dbOwner,
-    DB_PASSWORD: process.env.dbPassword,
+    DB_OWNER: process.env.DB_OWNER,
+    DB_PASSWORD: process.env.DB_PASSWORD,
     SESSION_SECRET: process.env.SESSION_SECRET,
     
     ACCESS_TOKEN_SECRET: process.env.ACCESS_TOKEN_SECRET,

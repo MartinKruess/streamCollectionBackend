@@ -6,14 +6,14 @@ const imgString = {
 }
 
 const imgSchema = mongoose.Schema({
-    userID: imgString,
+    userID: mongoose.Types.ObjectId,
     view: imgString,
-    name: String,
+    name: imgString,
     size: {
         type: Number,
         required: true
     },
-    type: String,
+    type: imgString,
 }, {collection: 'imgDB'})
 
 const ImgDataModel = mongoose.model('imgDB', imgSchema)

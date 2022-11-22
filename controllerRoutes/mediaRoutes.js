@@ -2,12 +2,12 @@ const express = require("express");
 const router = express.Router();
 
 const {
-    getAllImages,
+    getAllMedia,
     imageUpload,
     mediaDelete
 } = require("../controllers/mediaControllers");
 
-router.get('/getAllImages', getAllImages)
+router.get('/getAllImages', getAllMedia)
 router.post('/imageUpload', imageUpload)
 router.delete('/delete', mediaDelete)
 

@@ -1,88 +1,104 @@
 const ImgDataModel = require("../schemas/img-schemas");
-const UserDataModel = require("../schemas/user-schemas");
+const MediaDataModel = require("../schemas/media-schemas");
+const cloudinary = require("cloudinary").v2;
 
-exports.getAllImages = async (req, res) => {
+exports.getAllMedia = async (req, res) => {
+  //const userToken = await JSON.stringify(req.oauthtoken)
+  const userID = req.user._id;
 
-    //const userToken = await JSON.stringify(req.oauthtoken)
-    const userID = req.user._id
-    
-    try {
+  try {
     // Load imgData from DB
-    const imagesFromDB = await ImgDataModel.find({ userID: userID })
+    const imagesFromDB = await ImgDataModel.find({ userID: userID });
+    const mediaFromDB = await MediaDataModel.find({ userID: userID });
 
     // Send Data to Frontend
-    res.send({ ImagesFromDB: imagesFromDB })
-    } catch (error) {
-    }
- };
+    res.send({ ImagesFromDB: imagesFromDB, mediafromDB: mediaFromDB });
+  } catch (error) {}
+};
 
 // IMG Upload
 exports.imageUpload = async (req, res, next) => {
-    const userID = req.user._id
-    try {
+  const userID = req.user._id;
+  try {
+    const maxKbStorage = req.user.storage; // 400MB = 400.000 KB
+    const imgN = 20; // Max Images 400KB*20 = 8MB
+    const vidN = 10; // Max Videos 60MB*10 = 600MB
+    const soundN = 20; // Max Sounds 2MB*20 = 400MB
 
-        const maxStorage = req.user.storage
+    //Find: all images of user in DB
+    const userImages = await ImgDataModel.find({ userID });
 
-        //Find: all images of user in DB
-        const userImages = await ImgDataModel.find({ userID })
+    // Variable <- Request
+    const imgData = req.body;
+    console.log(req.body);
 
-        // Variable <- Request
-        const imgData = req.body
-        console.log(imgData)
+    // Convert "size" in Bytes to size in KB
+    const byteSize = imgData.size / 1024;
+    const kbSize = Number(byteSize.toFixed(2));
 
-        // Convert "size" in Bytes to size in KB
-        const rawSize = imgData.size / 1024
-        const newImgSize = Number(rawSize.toFixed(2))
+    // size of all Img in DB from User
+    const kbSum = userImages.reduce((acc, object) => {
+      return acc + object.size;
+    }, 0);
 
-        // size of all Img in DB from User
-        const sum = userImages.reduce((acc, object) => {
-            return acc + object.size
-        }, 0)
+    // Check img in DB  + new img is smaller than max storage
+    if (
+      kbSum + kbSize < maxKbStorage &&
+      userImages.length < imgN &&
+      userImages.length < vidN &&
+      userImages.length < soundN
+    ) {
+      // Upload Data of IMG to DB - Fail
+      const imgRes = await cloudinary.uploader.upload(imgData.view);
+      const imgUrl = imgRes.secure_url;
+      imgData.view = imgUrl;
+      imgData.size = kbSize;
+      await ImgDataModel(imgData).save();
 
-        // Check img in DB  + new img is smaller than max storage
-        if (sum + newImgSize < maxStorage) {
-            const newNumber = Number(sum / 1024) + newImgSize
+      // Load imgData from DB
+      const imagesFromDB = await ImgDataModel.find({ userID });
 
-            // Upload Data of IMG to DB - Fail
-            ImgDataModel(imgData).save()
-
-            // Load imgData from DB
-            const imagesFromDB = await ImgDataModel.find({ userID })
-
-            // Send Data to Frontend
-            res.send({ maxStorage: sum, ImagesFromDB: imagesFromDB })
-
-        } else {
-            const newNumber = Number(sum) + newImgSize
-            console.log(sum, newImgSize, maxStorage)
-            next(`Belegt: ${newNumber / 1024} MB Max ${maxStorage} MB`)
-        }
+      // Send Data to Frontend
+      res.send({ maxStorage: kbSum, ImagesFromDB: imagesFromDB });
+    } else {
+      const newKbSum = Number(kbSum) + kbSize;
+      next(
+        `Belegt: ${newKbSum} KB von Max ${maxKbStorage} KB, oder die Maximale Anzahl von ${n} der Bilder ist überschritten!`
+      );
     }
-    catch (error) {
-        console.log("ERROR:", "Error by Img upload!", error)
-    }
-}
+  } catch (error) {
+    //Error to Frontend
+    res.send({
+      message: "Das hat leider nicht funktioniert! Dein Speicherplatz ist voll",
+      error,
+    });
+    //console.log("ERROR:", "Error by Img upload!", error)
+  }
+};
 
 exports.mediaDelete = async (req, res) => {
-    console.log(req.body)
-    const userID = req.user._id
-    const mediaID = req.body._id
-    const mediaType = req.body.type
+  const userID = req.user._id;
+  const mediaID = req.body._id;
+  const mediaType = req.body.type;
 
-    switch (mediaType) {
-        case "img":
-            await ImgDataModel.deleteOne({_id: mediaID})
-            const images = await ImgDataModel.find( userID )
-            res.send(images)
-            break;
-        case "sound":
-            
-            break;
-        case "video":
-            
-            break;
-    
-        default:
-            break;
-    }    
-}
+  switch (mediaType) {
+    case "img":
+      await ImgDataModel.deleteOne({ _id: mediaID });
+      const images = await ImgDataModel.find(userID);
+      res.send(images);
+      break;
+    case "sound":
+      await MediaDataModel.deleteOne({ _id: mediaID });
+      const sounds = await MediaDataModel.find(userID);
+      res.send(sounds);
+      break;
+    case "video":
+      await MediaDataModel.deleteOne({ _id: mediaID });
+      const videos = await MediaDataModel.find(userID);
+      res.send(videos);
+      break;
+
+    default:
+      break;
+  }
+};
