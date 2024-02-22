@@ -7,7 +7,7 @@ const { authenticateToken, createAccessToken } = require("../authServer");
 exports.register = async (req, res) => {
     try {
         let dataOfUser = {}
-        const hashedRegisterPassword = await bcrypt.hash(req.body.password, saltRounds)
+        const hashedRegisterPassword = await bcrypt.hash(req.body.password, 10)
 
         dataOfUser = {
             mail: req.body.email,

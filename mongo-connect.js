@@ -2,12 +2,15 @@ const mongoose = require("mongoose")
 const config = require('./config')
 
 // DB Authorization
-const mongoPath = `mongodb+srv://${config.DB_OWNER}:${config.DB_PASSWORD}@twitchapp.zg8ms.mongodb.net/twitchappdb?retryWrites=true&w=majority`
+const mongoPath = `mongodb+srv://${config.DB_OWNER}:${config.DB_PASSWORD}@cluster0.b3vwvsm.mongodb.net/twitchapp?retryWrites=true&w=majority&appName=twitchApp`
 
-// 1. DB connection and dataLoad
+// 1. Mongoose settings
+mongoose.set("strictQuery", false);
+
+// 2. DB connection and dataLoad
 mongoose.connect(mongoPath, {
     useNewURLParser: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
   })
     .then(() => {
       console.log("DB connection established!")
