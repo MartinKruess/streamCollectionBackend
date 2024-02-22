@@ -5,9 +5,12 @@ const bcrypt = require('bcrypt')
 const { authenticateToken, createAccessToken } = require("../authServer");
 
 exports.register = async (req, res) => {
+    // Password hash
+    const saltRounds = 10
+    
     try {
         let dataOfUser = {}
-        const hashedRegisterPassword = await bcrypt.hash(req.body.password, 10)
+        const hashedRegisterPassword = await bcrypt.hash(req.body.password, saltRounds)
 
         dataOfUser = {
             mail: req.body.email,
@@ -36,7 +39,6 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
     console.log("Login process started... ")
-
     //Find: userData in userDB
     const userFromDB = await UserDataModel.findOne({ username: req.body.username })
     try {
