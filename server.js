@@ -15,10 +15,6 @@ const url = MODE === 'deployment' ? `${BASE_URL}:${PORT}` : BASE_URL
 const userRoutes = require("./controllerRoutes/userRoutes");
 const mediaRoutes = require("./controllerRoutes/mediaRoutes");
 
-// Password hash
-
-const saltRounds = 10
-
 // Database
 const { Schema } = require('mongoose')
 const UserDataModel = require('./schemas/user-schemas')
@@ -55,10 +51,6 @@ const corsOptions = {
 server.use(cors(corsOptions))
 
 console.log('Cors is active')
-
-// Route Imports
-const userRoutes = require("./controllerRoutes/userRoutes");
-const mediaRoutes = require("./controllerRoutes/mediaRoutes");
 
 // Authentification
 const { authenticateToken, createAccessToken } = require("./authServer");
