@@ -5,7 +5,7 @@ require('./mongo-connect')
 const express = require('express')
 const passport = require('passport')
 const cors = require('cors')
-// const url = MODE === 'deployment' ? `${config.BASE_URL}:${PORT}` : config.BASE_URL
+//const url = config.MODE === 'deployment' ? `${config.BASE_URL}:${PORT}` : config.BASE_URL
 const { socketServer } = require('./socketserver');
 
 
@@ -21,7 +21,9 @@ const userGroups = ["user", "duser", "suser"]
 // neue Instanzen
 const server = express()
 server.use(express.json({ limit: "1mb" }))
-server.use(cors())
+server.use(cors(
+  origin = config.MODE === 'development' ? config.DEV_URL : config.PROD_URL,
+))
 
 // Sessions
 const session = require("express-session")
