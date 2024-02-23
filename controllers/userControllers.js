@@ -18,7 +18,7 @@ exports.register = async (req, res) => {
             lastname: req.body.lastname,
             username: req.body.username,
             password: hashedRegisterPassword,
-            group: userGroups[0],
+            group: "regularUser",
             movies: 0,
             music: 0,
             images: 0,
