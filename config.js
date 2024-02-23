@@ -3,7 +3,7 @@ require('dotenv').config();
 const envConfig = {
     BASE_URL: process.env.BASE_URL,
     MODE: process.env.MODE,
-    PORT: process.env.PORT || 3232,
+    PORT: process.env.PORT || 5555,
     DB_OWNER: process.env.DB_OWNER,
     DB_PASSWORD: process.env.DB_PASSWORD,
     SESSION_SECRET: process.env.SESSION_SECRET,
