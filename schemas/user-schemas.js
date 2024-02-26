@@ -10,7 +10,11 @@ const regNumber = {
 }
 
 const userSchema = mongoose.Schema({
-    mail: regString,
+    mail: {
+        type: String,
+        required: true,
+        unique: true
+    },
     username: regString,
     password: regString,
     group: {
