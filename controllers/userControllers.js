@@ -34,17 +34,15 @@ exports.register = async (req, res) => {
     }
 };
 
-// USERNAME: Martin
-// PASSWORD: LoginPW123!
-
 exports.login = async (req, res) => {
     console.log("Login process started... ")
     //Find: userData in userDB
     const userFromDB = await UserDataModel.findOne({ username: req.body.username })
+    console.log("userFromDB", userFromDB)
     try {
         // COMPARE: loginData === userData
         const isLogedIn = await bcrypt.compare(req.body.password, userFromDB.password)
-
+        console.log(isLogedIn)
         if (isLogedIn === false) return
 
         const userData = {
@@ -54,7 +52,7 @@ exports.login = async (req, res) => {
         }
 
         const generateToken = createAccessToken(userData)
-
+        console.log(generateToken)
         // Send Data to Frontend
         res.send({ isLogedIn: isLogedIn, generateToken: generateToken, userData })
 
