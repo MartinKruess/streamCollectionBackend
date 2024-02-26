@@ -8,7 +8,6 @@ const cors = require('cors')
 //const url = config.MODE === 'deployment' ? `${config.BASE_URL}:${PORT}` : config.BASE_URL
 const { socketServer } = require('./socketserver');
 
-
 // Route Imports
 const userRoutes = require("./controllerRoutes/userRoutes");
 const mediaRoutes = require("./controllerRoutes/mediaRoutes");
@@ -21,11 +20,16 @@ const userGroups = ["user", "duser", "suser"]
 // neue Instanzen
 const server = express()
 server.use(express.json({ limit: "1mb" }))
-server.use(cors(
-  origin = config.MODE === 'development' ? config.DEV_URL : config.PROD_URL,
-))
+server.use(cors({
+  origin: config.MODE === 'development' ? config.DEV_URL : config.PROD_URL,
+  credentials: true
+}))
+console.log("CORS Log", {
+  origin: config.MODE === 'development' ? config.DEV_URL : config.PROD_URL,
+  credentials: true
+})
 
-// Sessions
+// Sessions 
 const session = require("express-session")
 server.use(session({
   secret: config.SESSION_SECRET,
