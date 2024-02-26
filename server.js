@@ -21,11 +21,11 @@ const userGroups = ["user", "duser", "suser"]
 const server = express()
 server.use(express.json({ limit: "1mb" }))
 server.use(cors({
-  origin: config.MODE === 'development' ? config.DEV_URL : config.PROD_URL,
+  origin: "https://stream-collection.netlify.app",
   credentials: true
 }))
 console.log("CORS Log", {
-  origin: config.MODE === 'development' ? config.DEV_URL : config.PROD_URL,
+  origin: "https://stream-collection.netlify.app",
   credentials: true
 })
 
