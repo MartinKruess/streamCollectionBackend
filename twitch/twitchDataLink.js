@@ -2,6 +2,7 @@ const { default: axios } = require("axios")
 const config = require('../config')
 const UserDataModel = require("../schemas/user-schemas")
 
+// reusable function to get data from twitch
 exports.getTwitchData = async ( dataLink , id="id") => {
   const user = await UserDataModel.findOne({mail: "martinkr90@googlemail.com"})
 

@@ -42,7 +42,7 @@ exports.login = async (req, res) => {
     try {
         // COMPARE: loginData === userData
         const isLogedIn = await bcrypt.compare(req.body.password, userFromDB.password)
-        console.log(isLogedIn)
+        console.log("IsLogedIn?", isLogedIn)
         if (isLogedIn === false) return
 
         const userData = {
@@ -52,7 +52,7 @@ exports.login = async (req, res) => {
         }
 
         const generateToken = createAccessToken(userData)
-        console.log(generateToken)
+        console.log("JWT Token", generateToken)
         // Send Data to Frontend
         res.send({ isLogedIn: isLogedIn, generateToken: generateToken, userData })
 

@@ -21,13 +21,10 @@ const userGroups = ["user", "duser", "suser"]
 const server = express()
 server.use(express.json({ limit: "1mb" }))
 server.use(cors({
-  origin: "https://stream-collection.netlify.app",
+  // origin: "https://stream-collection.netlify.app",
+  origin: "http://localhost:3000",
   credentials: true
 }))
-console.log("CORS Log", {
-  origin: "https://stream-collection.netlify.app",
-  credentials: true
-})
 
 // Sessions 
 const session = require("express-session")
@@ -51,6 +48,7 @@ server.get("/", (request, response, next) => {
 server.use('/user', userRoutes)
 server.use('/media', authenticateToken, mediaRoutes)
 server.use('/dashboard', authenticateToken, dashboardRoutes)
+// Connect Twitch with Authentification
 server.use('/auth/twitch', twitchRouter)
 server.use((err, _req, res, _next) => {
   //!err.status && console.log(err)
@@ -63,6 +61,8 @@ server.use((err, _req, res, _next) => {
 
 // Twitch
 
+// https://dev.twitch.tv/docs/api/reference/
+
 //DASHBOARD GET
   // mods online: GET https://api.twitch.tv/helix/moderation/moderators
   // Umfragen: GET https://api.twitch.tv/helix/polls
@@ -74,6 +74,8 @@ server.use((err, _req, res, _next) => {
   // User bannen: POST https://api.twitch.tv/helix/moderation/bans
   // User entbannen: DELETE https://api.twitch.tv/helix/moderation/bans
   // POST https://api.twitch.tv/helix/extensions/chat
+  // POST https://api.twitch.tv/helix/channels/commercial (WERBUNG)
+  // DOKU: https://dev.twitch.tv/docs/api/reference/#start-commercial
 
 //CHATBOT
   // AutoMod: POST https://api.twitch.tv/helix/moderation/enforcements/status msg_id msg_text is_permitted= false (blocked)

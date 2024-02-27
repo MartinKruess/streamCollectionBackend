@@ -31,6 +31,8 @@ exports.getDashboardTwitchData = async (req, res, next) => {
     const dataLinkEmotes = "https://api.twitch.tv/helix/chat/emotes"
     const dataLinkUsers = "https://api.twitch.tv/helix/users"
 
+    console.log("dash 34 bID", broadcaster_id)
+
     twitchDataObj.userList = await getTwitchData(dataLinkUsers)
     twitchDataObj.bitList = await getTwitchData(dataLinkBits)
     twitchDataObj.subList = await getTwitchData(dataLinkSubs, "broadcaster_id")

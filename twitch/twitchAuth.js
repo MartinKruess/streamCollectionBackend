@@ -1,5 +1,4 @@
 const express = require('express')
-
 const passport = require('passport')
 const config = require('../config')
 
@@ -11,6 +10,7 @@ const { default: axios } = require('axios');
 const twitchRouter = Router()
 
 // Validation
+console.log("Start Vaidation ...")
 passport.use(new twitchStrategy({
     clientID: config.TWITCH_CLIENT_ID,
     clientSecret: config.TWITCH_CLIENT_SECRET,
@@ -25,7 +25,7 @@ passport.use(new twitchStrategy({
     //
   },
   async function(accessToken, refreshToken, profile, done) {
-      
+    console.log(profile)
     await UserDataModel.updateOne({ mail: profile.email },{"twitchId": profile.id, "twitchToken": accessToken, "twitchRefreshToken": refreshToken})
     const userUpdated = await UserDataModel.findOne({ mail: profile.email })
     done(null, userUpdated)
@@ -60,6 +60,7 @@ const refToken = async (user) => {
         client_secret: config.TWITCH_CLIENT_SECRET,
       })
       await UserDataModel.updateOne({ mail: user.mail },{"twitchToken": res.data.access_token, "twitchRefreshToken": res.data.refresh_token})
+      console.log("Twitch Token?", res.data.access_token)
   }
   catch(err){
     console.log(err.response.data)
