@@ -25,7 +25,7 @@ passport.use(new twitchStrategy({
     //
   },
   async function(accessToken, refreshToken, profile, done) {
-    console.log(profile)
+    console.log("PROFILE", profile)
     await UserDataModel.updateOne({ mail: profile.email },{"twitchId": profile.id, "twitchToken": accessToken, "twitchRefreshToken": refreshToken})
     const userUpdated = await UserDataModel.findOne({ mail: profile.email })
     done(null, userUpdated)
