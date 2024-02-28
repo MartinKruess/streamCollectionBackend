@@ -48,12 +48,14 @@ exports.getDashboardTwitchData = async (req, res, next) => {
 
   try {
     const response = await getFetchCollection()
+    console.log("DC - try", response)
     await res.send(response)
   }
   catch (err) {
     if (err.response.data.status === 401 && req.user.twitchRefreshToken) {
       await refToken(req.user)
       const response = await getFetchCollection()
+      console.log("DC - catch",response)
       await res.send(response)
     }
   }
