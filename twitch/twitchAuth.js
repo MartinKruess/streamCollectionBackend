@@ -24,6 +24,7 @@ passport.use(new twitchStrategy({
     ]
     //
   },
+  console.log("27, Twitch Strategy ..."),
   async function(accessToken, refreshToken, profile, done) {
     console.log("PROFILE", profile)
     await UserDataModel.updateOne({ mail: profile.email },{"twitchId": profile.id, "twitchToken": accessToken, "twitchRefreshToken": refreshToken})
@@ -33,10 +34,12 @@ passport.use(new twitchStrategy({
 ));
 
 passport.serializeUser(function(user, done) {
+  console.log("Serialize User", user)
     done(null, user);
 });
 
 passport.deserializeUser(function(user, done) {
+  console.log("Deserialize User", user)
     done(null, user);
 });
 
@@ -48,6 +51,7 @@ twitchRouter.get("/", passport.authenticate("twitch", {
 
 twitchRouter.get("/callback", passport.authenticate("twitch", { failureRedirect: "/" }), function(req, res) {
     // Successful authentication, redirect home.
+    console.log("54, Twitch Redirect", req.user)
     res.redirect(`${config.FRONTEND_URL}/dashboard`);
 });
 
@@ -60,7 +64,7 @@ const refToken = async (user) => {
         client_secret: config.TWITCH_CLIENT_SECRET,
       })
       await UserDataModel.updateOne({ mail: user.mail },{"twitchToken": res.data.access_token, "twitchRefreshToken": res.data.refresh_token})
-      console.log("Twitch Token?", res.data.access_token)
+      console.log("67, Twitch Token?", res.data.access_token)
   }
   catch(err){
     console.log(err.response.data)
