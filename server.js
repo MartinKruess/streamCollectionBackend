@@ -21,8 +21,8 @@ const userGroups = ["user", "duser", "suser"]
 const server = express()
 server.use(express.json({ limit: "1mb" }))
 server.use(cors({
-  // origin: "https://stream-collection.netlify.app",
-  origin: "http://localhost:3000",
+  origin: "https://stream-collection.netlify.app",
+  // origin: "http://localhost:3000",
   credentials: true
 }))
 
